@@ -1,0 +1,31 @@
+@startuml
+title LINQ To Nowhere Domain Model
+
+hide methods
+
+class User {
+    UserId : int
+    UserName : string
+    Password : string
+}
+
+class Post {
+    PostId : int
+    Title : string
+    Body : string
+    UserId : int <FK>
+}
+
+class Comment {
+    CommentId : int
+    Body : string
+    PostId : int <FK>
+    UserId : int <FK>
+}
+
+User "1" --> "0..*" Post : writes
+Post "1" --> "0..*" Comment : has
+User "1" --> "0..*" Comment : makes
+
+
+@enduml
