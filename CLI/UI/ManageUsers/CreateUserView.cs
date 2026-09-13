@@ -28,5 +28,3 @@ public class CreateUserView
         Console.WriteLine($"User created with ID: {createdUser.Id}");
     }
 }
-
-// TODO 1. Create new user (user name, password, etc)

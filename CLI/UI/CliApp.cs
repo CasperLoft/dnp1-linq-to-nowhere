@@ -1,3 +1,4 @@
+using CLI.UI.ManagePosts;
 using CLI.UI.ManageUsers;
 using RepositoryContracts;
 
@@ -17,20 +18,75 @@ public class CliApp
         this._postRepository = postRepository;
     }
 
-    public Task StartAsync()
+    public async Task StartAsync()
     {
+        bool isRunning = true;
+
+        while (isRunning)
+        {
+            ClearConsole();
+            ShowMenu();
+
+            string? userChoice = Console.ReadLine();
+            
+            switch (userChoice)
+            {
+                case "1":
+                    await StartCreateUserView();
+                    break;
+                
+                case "2":
+                    await StartCreatePostView();
+                    break;
+
+                case "3":
+                    await StartListPostsView();
+                    break;
 
 
+                case "0":
+                    isRunning = false;
+                    break;
 
-        return Task.CompletedTask;
+                default:
+                    Console.WriteLine("Invalid option.");
+                    Console.ReadKey();
+                    break;
+            }
+        }
     }
 
-    public Task StartCreateUserView()
+    private async Task StartListPostsView()
+    {
+        var listPostView = new ListPostsView(_postRepository);
+        ClearConsole();
+
+        int? selectedPostId = listPostView.Start();
+
+        if (selectedPostId is int postId)
+        {
+            var singlePostView = new SinglePostView(_postRepository, _commentRepository, _userRepository);
+
+            ClearConsole();
+
+            await singlePostView.StartAsync(postId);
+        }
+    }
+
+    private async Task StartCreatePostView()
+    {
+        var createPostView = new CreatePostView(_postRepository);
+        ClearConsole();
+
+        createPostView.StartAsync();
+    }
+
+    public async Task StartCreateUserView()
     {
         var createUserView = new CreateUserView(_userRepository);
         ClearConsole();
         
-        return createUserView.StartAsync();
+        createUserView.StartAsync();
     }
 
     public void ShowMenu()
@@ -39,18 +95,10 @@ public class CliApp
         Console.WriteLine("1. Create new user:");
         Console.WriteLine("2. Create new post:");
         Console.WriteLine("3. View posts:");
+        Console.WriteLine("0. Exit CLI:");
 
-        Console.Write("Enter option 1-3: ");
-        string userchoice = Console.ReadLine();
+        Console.Write("Enter option 0-3: ");
 
-        switch (userchoice)
-        {
-            case "1":
-            {
-                StartCreateUserView();
-            } ;
-                break;
-        }
     }
 
     public void ClearConsole(){Console.Clear();}
