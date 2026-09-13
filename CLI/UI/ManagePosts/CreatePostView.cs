@@ -59,6 +59,7 @@ public class CreatePostView
         Console.WriteLine();
         Console.WriteLine("Press any key to return...");
         Console.ReadKey();
+        
         // TODO Validate user and password logic   
     }
 }
