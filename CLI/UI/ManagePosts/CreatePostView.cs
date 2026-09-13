@@ -37,7 +37,10 @@ public class CreatePostView
         Post createdPost = await _postRepository.AddAsync(newPost);
         
         Console.WriteLine($"Post created with ID: {createdPost.Id}");
-
+        
+        Console.WriteLine();
+        Console.WriteLine("Press any key to return...");
+        Console.ReadKey();
         // TODO Validate user and password logic   
     }
 }

@@ -26,5 +26,8 @@ public class CreateUserView
         User createdUser = await _userRepository.AddAsync(newuser);
         
         Console.WriteLine($"User created with ID: {createdUser.Id}");
+        Console.WriteLine();
+        Console.WriteLine("Press any key to return...");
+        Console.ReadKey();
     }
 }

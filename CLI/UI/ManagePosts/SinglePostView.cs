@@ -23,6 +23,8 @@ public class SinglePostView
     {
         while (true)
         {
+            Console.Clear();
+            
             Post post = await _postRepository.GetByIdAsync(postId);
             User postAuthor = await _userRepository.GetByIdAsync(post.UserId);
 
@@ -52,7 +54,7 @@ public class SinglePostView
                     Console.WriteLine($"{commentAuthor.UserName}: {comment.Body}");
                 }
             }
-            
+
             Console.WriteLine("-------------------------");
             string userChoice = CliApp.ReadRequiredInput("Press 1 to add comment or 0 to go back: ");
 
