@@ -75,7 +75,7 @@ public class CliApp
 
     private async Task StartCreatePostView()
     {
-        var createPostView = new CreatePostView(_postRepository);
+        var createPostView = new CreatePostView(_postRepository, _userRepository);
         ClearConsole();
 
         await createPostView.StartAsync();
