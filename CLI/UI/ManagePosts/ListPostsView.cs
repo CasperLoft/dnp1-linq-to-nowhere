@@ -16,17 +16,17 @@ public class ListPostsView
     {
         IQueryable<Post> posts = _postRepository.GetManyAsync();
 
-        Console.WriteLine("         Post Overview               ");
-        Console.WriteLine("-------------------------------------");
-        Console.WriteLine(" Post ID :         Post Title");
-        Console.WriteLine("-------------------------------------");
+        Console.WriteLine("        Post Overview");
+        Console.WriteLine(CliApp.Divider);
+        Console.WriteLine(" Post ID :     Post Title");
+        Console.WriteLine(CliApp.Divider);
 
         foreach (Post post in posts)
         {
             Console.WriteLine($"{post.Id}: {post.Title}");
         }
 
-        Console.WriteLine("-------------------------------------");
+        Console.WriteLine(CliApp.Divider);
 
         while (true)
         {

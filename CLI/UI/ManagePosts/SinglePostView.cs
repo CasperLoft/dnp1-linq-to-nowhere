@@ -28,13 +28,17 @@ public class SinglePostView
             Post post = await _postRepository.GetByIdAsync(postId);
             User postAuthor = await _userRepository.GetByIdAsync(post.UserId);
 
-            Console.WriteLine("--------- Post ---------");
+            Console.WriteLine(CliApp.Divider);
+            Console.WriteLine("            Post");
+            Console.WriteLine(CliApp.Divider);
             Console.WriteLine($"Title: {post.Title}");
             Console.WriteLine($"Author: {postAuthor.UserName}");
             Console.WriteLine();
             Console.WriteLine(post.Body);
             Console.WriteLine();
-            Console.WriteLine("------- Comments -------");
+            Console.WriteLine(CliApp.Divider);
+            Console.WriteLine("          Comments");
+            Console.WriteLine(CliApp.Divider);
 
             IQueryable<Comment> comments = _commentRepository
                 .GetManyAsync()
@@ -55,7 +59,7 @@ public class SinglePostView
                 }
             }
 
-            Console.WriteLine("-------------------------");
+            Console.WriteLine(CliApp.Divider);
             string userChoice = CliApp.ReadRequiredInput("Press 1 to add comment or 0 to go back: ");
 
             switch (userChoice)

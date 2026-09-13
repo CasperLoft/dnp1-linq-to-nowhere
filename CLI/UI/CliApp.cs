@@ -6,6 +6,8 @@ namespace CLI.UI;
 
 public class CliApp
 {
+    public const string Divider = "-----------------------------";
+
     private readonly IUserRepository _userRepository;
     private readonly ICommentRepository _commentRepository;
     private readonly IPostRepository _postRepository;
@@ -43,6 +45,9 @@ public class CliApp
                     await StartListPostsView();
                     break;
 
+                case "4":
+                    StartListUsersView();
+                    break;
 
                 case "0":
                     isRunning = false;
@@ -73,6 +78,14 @@ public class CliApp
         }
     }
 
+    private void StartListUsersView()
+    {
+        var listUsersView = new ListUsersView(_userRepository);
+        ClearConsole();
+
+        listUsersView.Start();
+    }
+
     private async Task StartCreatePostView()
     {
         var createPostView = new CreatePostView(_postRepository, _userRepository);
@@ -91,13 +104,17 @@ public class CliApp
 
     public void ShowMenu()
     {
-        Console.WriteLine("------ Menu ------");
+        Console.WriteLine(Divider);
+        Console.WriteLine("            Menu");
+        Console.WriteLine(Divider);
         Console.WriteLine("1. Create new user:");
         Console.WriteLine("2. Create new post:");
         Console.WriteLine("3. View posts:");
+        Console.WriteLine("4. View users:");
         Console.WriteLine("0. Exit CLI:");
+        Console.WriteLine(Divider);
 
-        Console.Write("Enter option 0-3: ");
+        Console.Write("Enter option 0-4: ");
 
     }
 
