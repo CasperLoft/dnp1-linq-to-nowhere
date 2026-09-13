@@ -78,7 +78,7 @@ public class CliApp
         var createPostView = new CreatePostView(_postRepository);
         ClearConsole();
 
-        createPostView.StartAsync();
+        await createPostView.StartAsync();
     }
 
     public async Task StartCreateUserView()
@@ -86,7 +86,7 @@ public class CliApp
         var createUserView = new CreateUserView(_userRepository);
         ClearConsole();
         
-        createUserView.StartAsync();
+        await createUserView.StartAsync();
     }
 
     public void ShowMenu()

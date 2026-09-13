@@ -13,13 +13,13 @@ public class CommentInMemoryRepository
         new Comment { Id = 2, Body = "This is the second comment.", PostId = 1, UserId = 2 },
         new Comment { Id = 3, Body = "This is the third comment.", PostId = 1, UserId = 3 },
 
-        new Comment { Id = 1, Body = "This is the first comment.", PostId = 2, UserId = 1 },
-        new Comment { Id = 2, Body = "This is the second comment.", PostId = 2, UserId = 2 },
-        new Comment { Id = 3, Body = "This is the third comment.", PostId = 2, UserId = 3 },
+        new Comment { Id = 4, Body = "This is the first comment.", PostId = 2, UserId = 1 },
+        new Comment { Id = 5, Body = "This is the second comment.", PostId = 2, UserId = 2 },
+        new Comment { Id = 6, Body = "This is the third comment.", PostId = 2, UserId = 3 },
 
-        new Comment { Id = 1, Body = "This is the first comment.", PostId = 3, UserId = 1 },
-        new Comment { Id = 2, Body = "This is the second comment.", PostId = 3, UserId = 2 },
-        new Comment { Id = 3, Body = "This is the third comment.", PostId = 3, UserId = 3 },
+        new Comment { Id = 7, Body = "This is the first comment.", PostId = 3, UserId = 1 },
+        new Comment { Id = 8, Body = "This is the second comment.", PostId = 3, UserId = 2 },
+        new Comment { Id = 9, Body = "This is the third comment.", PostId = 3, UserId = 3 },
 
     ])
     {
