@@ -15,9 +15,9 @@ public class CliApp
     public CliApp(IUserRepository userRepository,
         ICommentRepository commentRepository, IPostRepository postRepository)
     {
-        this._userRepository = userRepository;
-        this._commentRepository = commentRepository;
-        this._postRepository = postRepository;
+        _userRepository = userRepository;
+        _commentRepository = commentRepository;
+        _postRepository = postRepository;
     }
 
     public async Task StartAsync()
