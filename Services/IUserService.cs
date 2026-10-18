@@ -6,7 +6,7 @@ public interface IUserService
 {
     Task<UserDTO> CreateAsync(CreateUserDTO request);
     Task<UserDTO> GetByIdAsync(int id);
-    Task<IReadOnlyCollection<UserDTO>> GetManyAsync();
+    Task<IReadOnlyCollection<UserDTO>> GetManyAsync(string? userNameContains = null);
     Task<UserDTO> UpdateAsync(int id, UpdateUserDTO request);
     Task DeleteAsync(int id);
 }

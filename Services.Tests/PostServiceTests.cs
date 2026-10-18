@@ -18,7 +18,7 @@ public class PostServiceTests
         var posts = new Mock<IPostRepository>();
         var service = new PostService(posts.Object, users.Object, Mock.Of<ICommentRepository>());
 
-        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+        await Assert.ThrowsAsync<ResourceNotFoundException>(() =>
             service.CreateAsync(new CreatePostDTO("Title", "Body", 99)));
         posts.Verify(repository => repository.AddAsync(It.IsAny<Post>()), Times.Never);
     }
@@ -56,7 +56,7 @@ public class PostServiceTests
 
         var service = new PostService(posts.Object, Mock.Of<IUserRepository>(), comments.Object);
 
-        await Assert.ThrowsAsync<InvalidOperationException>(() => service.DeleteAsync(1));
+        await Assert.ThrowsAsync<ConflictException>(() => service.DeleteAsync(1));
         posts.Verify(repository => repository.DeleteAsync(It.IsAny<int>()), Times.Never);
     }
 }

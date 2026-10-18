@@ -36,11 +36,14 @@ public class CommentService : ICommentService
 
     public async Task<CommentDTO> GetByIdAsync(int id)
     {
-        Comment comment = await _commentRepository.GetByIdAsync(id);
+        Comment comment = await GetCommentAsync(id);
         return ToDto(comment);
     }
 
-    public Task<IReadOnlyCollection<CommentDTO>> GetManyAsync(int? userId = null, int? postId = null)
+    public Task<IReadOnlyCollection<CommentDTO>> GetManyAsync(
+        int? userId = null,
+        int? postId = null,
+        string? userNameContains = null)
     {
         IQueryable<Comment> comments = _commentRepository.GetManyAsync();
 
@@ -54,13 +57,23 @@ public class CommentService : ICommentService
             comments = comments.Where(comment => comment.PostId == postId.Value);
         }
 
+        if (!string.IsNullOrWhiteSpace(userNameContains))
+        {
+            HashSet<int> matchingUserIds = _userRepository.GetManyAsync()
+                .Where(user => user.UserName.Contains(userNameContains, StringComparison.OrdinalIgnoreCase))
+                .Select(user => user.Id)
+                .ToHashSet();
+
+            comments = comments.Where(comment => matchingUserIds.Contains(comment.UserId));
+        }
+
         IReadOnlyCollection<CommentDTO> result = comments.Select(ToDto).ToArray();
         return Task.FromResult(result);
     }
 
     public async Task<CommentDTO> UpdateAsync(int id, UpdateCommentDTO request)
     {
-        Comment comment = await _commentRepository.GetByIdAsync(id);
+        Comment comment = await GetCommentAsync(id);
         await EnsureReferencesExistAsync(comment.UserId, comment.PostId);
 
         comment.Body = request.Body;
@@ -69,12 +82,43 @@ public class CommentService : ICommentService
         return ToDto(comment);
     }
 
-    public Task DeleteAsync(int id) => _commentRepository.DeleteAsync(id);
+    public async Task DeleteAsync(int id)
+    {
+        await GetCommentAsync(id);
+        await _commentRepository.DeleteAsync(id);
+    }
 
     private async Task EnsureReferencesExistAsync(int userId, int postId)
     {
-        await _userRepository.GetByIdAsync(userId);
-        await _postRepository.GetByIdAsync(postId);
+        try
+        {
+            await _userRepository.GetByIdAsync(userId);
+        }
+        catch (InvalidOperationException exception)
+        {
+            throw new ResourceNotFoundException($"User with Id {userId} was not found.", exception);
+        }
+
+        try
+        {
+            await _postRepository.GetByIdAsync(postId);
+        }
+        catch (InvalidOperationException exception)
+        {
+            throw new ResourceNotFoundException($"Post with Id {postId} was not found.", exception);
+        }
+    }
+
+    private async Task<Comment> GetCommentAsync(int id)
+    {
+        try
+        {
+            return await _commentRepository.GetByIdAsync(id);
+        }
+        catch (InvalidOperationException exception)
+        {
+            throw new ResourceNotFoundException($"Comment with Id {id} was not found.", exception);
+        }
     }
 
     private static CommentDTO ToDto(Comment comment) =>

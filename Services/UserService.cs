@@ -35,22 +35,29 @@ public class UserService : IUserService
 
     public async Task<UserDTO> GetByIdAsync(int id)
     {
-        User user = await _userRepository.GetByIdAsync(id);
+        User user = await GetUserAsync(id);
         return ToDto(user);
     }
 
-    public Task<IReadOnlyCollection<UserDTO>> GetManyAsync()
+    public Task<IReadOnlyCollection<UserDTO>> GetManyAsync(string? userNameContains = null)
     {
-        IReadOnlyCollection<UserDTO> users = _userRepository.GetManyAsync()
+        IQueryable<User> users = _userRepository.GetManyAsync();
+
+        if (!string.IsNullOrWhiteSpace(userNameContains))
+        {
+            users = users.Where(user => user.UserName.Contains(userNameContains, StringComparison.OrdinalIgnoreCase));
+        }
+
+        IReadOnlyCollection<UserDTO> result = users
             .Select(ToDto)
             .ToArray();
 
-        return Task.FromResult(users);
+        return Task.FromResult(result);
     }
 
     public async Task<UserDTO> UpdateAsync(int id, UpdateUserDTO request)
     {
-        User user = await _userRepository.GetByIdAsync(id);
+        User user = await GetUserAsync(id);
 
         if (!string.Equals(user.UserName, request.UserName, StringComparison.OrdinalIgnoreCase))
         {
@@ -66,16 +73,16 @@ public class UserService : IUserService
 
     public async Task DeleteAsync(int id)
     {
-        await _userRepository.GetByIdAsync(id);
+        await GetUserAsync(id);
 
         if (_postRepository.GetManyAsync().Any(post => post.UserId == id))
         {
-            throw new InvalidOperationException("A user with posts cannot be deleted.");
+            throw new ConflictException("A user with posts cannot be deleted.");
         }
 
         if (_commentRepository.GetManyAsync().Any(comment => comment.UserId == id))
         {
-            throw new InvalidOperationException("A user with comments cannot be deleted.");
+            throw new ConflictException("A user with comments cannot be deleted.");
         }
 
         await _userRepository.DeleteAsync(id);
@@ -89,7 +96,19 @@ public class UserService : IUserService
 
         if (exists)
         {
-            throw new InvalidOperationException("The username is already in use.");
+            throw new ConflictException("The username is already in use.");
+        }
+    }
+
+    private async Task<User> GetUserAsync(int id)
+    {
+        try
+        {
+            return await _userRepository.GetByIdAsync(id);
+        }
+        catch (InvalidOperationException exception)
+        {
+            throw new ResourceNotFoundException($"User with Id {id} was not found.", exception);
         }
     }
 

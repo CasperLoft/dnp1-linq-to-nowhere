@@ -39,7 +39,7 @@ public class UserServiceTests
 
         var service = new UserService(users.Object, Mock.Of<IPostRepository>(), Mock.Of<ICommentRepository>());
 
-        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+        await Assert.ThrowsAsync<ConflictException>(() =>
             service.CreateAsync(new CreateUserDTO("ada", "another-secret")));
         users.Verify(repository => repository.AddAsync(It.IsAny<User>()), Times.Never);
     }
@@ -58,7 +58,7 @@ public class UserServiceTests
 
         var service = new UserService(users.Object, posts.Object, Mock.Of<ICommentRepository>());
 
-        await Assert.ThrowsAsync<InvalidOperationException>(() => service.DeleteAsync(1));
+        await Assert.ThrowsAsync<ConflictException>(() => service.DeleteAsync(1));
         users.Verify(repository => repository.DeleteAsync(It.IsAny<int>()), Times.Never);
     }
 }
