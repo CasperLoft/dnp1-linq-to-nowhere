@@ -29,6 +29,32 @@ public class ApiTests : IClassFixture<ApiFactory>
     }
 
     [Fact]
+    public async Task GetUsers_FiltersByUserName()
+    {
+        _factory.Users.Reset(
+            new User { Id = 1, UserName = "Ada", Password = "secret" },
+            new User { Id = 2, UserName = "Bob", Password = "secret" });
+
+        HttpResponseMessage response = await _client.GetAsync("/users?userNameContains=ad");
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        UserDTO[] users = await response.Content.ReadFromJsonAsync<UserDTO[]>()
+            ?? throw new InvalidOperationException("The users response was empty.");
+        Assert.Equal([new UserDTO(1, "Ada")], users);
+    }
+
+    [Fact]
+    public async Task GetUser_ReturnsUserDto()
+    {
+        _factory.Users.Reset(new User { Id = 2, UserName = "Bob", Password = "secret" });
+
+        HttpResponseMessage response = await _client.GetAsync("/users/2");
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal(new UserDTO(2, "Bob"), await response.Content.ReadFromJsonAsync<UserDTO>());
+    }
+
+    [Fact]
     public async Task GetPosts_PassesAllFiltersToService()
     {
         _factory.Users.Reset(new User { Id = 2, UserName = "ada", Password = "secret" });

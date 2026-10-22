@@ -1,0 +1,99 @@
+@page "/users"
+@using DTOs
+@using WebApp.Services
+@inject IUserService UserService
+
+<PageTitle>Users</PageTitle>
+
+<div class="users-heading">
+    <div>
+        <p class="eyebrow">ADMIN // DIRECTORY</p>
+        <h1>Users</h1>
+    </div>
+    <a class="btn btn-primary" href="users/new">New user</a>
+</div>
+
+<form class="row g-2 mb-4" @onsubmit="SearchAsync" @onsubmit:preventDefault>
+    <div class="col-sm-8 col-md-6">
+        <label class="visually-hidden" for="username-search">Search usernames</label>
+        <input id="username-search"
+               class="form-control"
+               @bind="userNameContains"
+               placeholder="Search usernames" />
+    </div>
+    <div class="col-auto d-flex gap-2">
+        <button class="btn btn-primary" type="submit">Search</button>
+        <button class="btn btn-outline-secondary" type="button" @onclick="ClearAsync">Clear</button>
+    </div>
+</form>
+
+@if (isLoading)
+{
+    <p class="text-secondary" role="status">Loading users…</p>
+}
+else if (errorMessage is not null)
+{
+    <div class="alert alert-danger" role="alert">@errorMessage</div>
+}
+else if (users.Count == 0)
+{
+    <p class="text-secondary">No users match your search.</p>
+}
+else
+{
+    <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-3">
+        @foreach (UserDTO user in users)
+        {
+            <div class="col">
+                <a class="user-card-link" href="@($"users/{user.Id}")">
+                    <article class="card h-100 shadow-sm user-card">
+                        <div class="card-body">
+                            <p class="eyebrow">USER</p>
+                            <h2 class="h5 card-title mb-0">@user.UserName</h2>
+                        </div>
+                    </article>
+                </a>
+            </div>
+        }
+    </div>
+}
+
+@code {
+    private IReadOnlyCollection<UserDTO> users = [];
+    private string userNameContains = string.Empty;
+    private bool isLoading = true;
+    private string? errorMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadUsersAsync();
+    }
+
+    private Task SearchAsync() => LoadUsersAsync();
+
+    private async Task ClearAsync()
+    {
+        userNameContains = string.Empty;
+        await LoadUsersAsync();
+    }
+
+    private async Task LoadUsersAsync()
+    {
+        isLoading = true;
+        errorMessage = null;
+
+        try
+        {
+            users = await UserService.GetManyAsync(userNameContains);
+        }
+        catch (HttpRequestException)
+        {
+            users = [];
+            errorMessage = "Users could not be loaded. Make sure the Web API is running and try again.";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+}

@@ -1,0 +1,196 @@
+@page "/users/{Id:int}"
+@using DTOs
+@using WebApp.Services
+@inject IUserService UserService
+@inject IPostService PostService
+@inject ICommentService CommentService
+
+<PageTitle>@(user?.UserName ?? "User")</PageTitle>
+
+<a class="back-link" href="users">← Back to users</a>
+
+@if (isUserLoading)
+{
+    <p class="text-secondary" role="status">Loading user…</p>
+}
+else if (userNotFound)
+{
+    <div class="alert alert-warning" role="alert">This user no longer exists.</div>
+}
+else if (userErrorMessage is not null)
+{
+    <div class="alert alert-danger" role="alert">@userErrorMessage</div>
+}
+else if (user is not null)
+{
+    <section class="user-profile-panel mb-5" aria-labelledby="user-profile-heading">
+        <p class="eyebrow">ADMIN // PROFILE</p>
+        <h1 id="user-profile-heading">@user.UserName</h1>
+        <p class="user-profile-copy mb-0">Authored activity is collected here for future moderation workflows.</p>
+    </section>
+
+    <section class="user-activity-section" aria-labelledby="authored-posts-heading">
+        <h2 id="authored-posts-heading">Posts</h2>
+
+        @if (isPostsLoading)
+        {
+            <p class="text-secondary" role="status">Loading posts…</p>
+        }
+        else if (postsErrorMessage is not null)
+        {
+            <div class="alert alert-danger" role="alert">@postsErrorMessage</div>
+        }
+        else if (posts.Count == 0)
+        {
+            <p class="text-secondary">This user has not created any posts.</p>
+        }
+        else
+        {
+            <div class="row row-cols-1 row-cols-md-2 g-3">
+                @foreach (PostDTO post in posts)
+                {
+                    <div class="col">
+                        <a class="user-post-card-link" href="@($"posts/{post.Id}")">
+                            <article class="card h-100 shadow-sm user-post-card">
+                                <div class="card-body">
+                                    <h3 class="h5 card-title">@post.Title</h3>
+                                    <p class="card-text mb-0">@GetBodyPreview(post.Body)</p>
+                                </div>
+                            </article>
+                        </a>
+                    </div>
+                }
+            </div>
+        }
+    </section>
+
+    <section class="user-activity-section" aria-labelledby="authored-comments-heading">
+        <h2 id="authored-comments-heading">Comments</h2>
+
+        @if (isCommentsLoading)
+        {
+            <p class="text-secondary" role="status">Loading comments…</p>
+        }
+        else if (commentsErrorMessage is not null)
+        {
+            <div class="alert alert-danger" role="alert">@commentsErrorMessage</div>
+        }
+        else if (comments.Count == 0)
+        {
+            <p class="text-secondary">This user has not written any comments.</p>
+        }
+        else
+        {
+            <ol class="user-comment-thread">
+                @foreach (CommentDTO comment in comments.OrderByDescending(comment => comment.Id))
+                {
+                    <li>
+                        <article class="user-comment-card">
+                            <p class="content-body mb-3">@comment.Body</p>
+                            <a class="comment-post-link" href="@($"posts/{comment.PostId}")">View post <span aria-hidden="true">→</span></a>
+                        </article>
+                    </li>
+                }
+            </ol>
+        }
+    </section>
+}
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+
+    private UserDTO? user;
+    private IReadOnlyCollection<PostDTO> posts = [];
+    private IReadOnlyCollection<CommentDTO> comments = [];
+    private bool isUserLoading;
+    private bool isPostsLoading;
+    private bool isCommentsLoading;
+    private bool userNotFound;
+    private string? userErrorMessage;
+    private string? postsErrorMessage;
+    private string? commentsErrorMessage;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await LoadProfileAsync();
+    }
+
+    private async Task LoadProfileAsync()
+    {
+        isUserLoading = true;
+        isPostsLoading = false;
+        isCommentsLoading = false;
+        user = null;
+        posts = [];
+        comments = [];
+        userNotFound = false;
+        userErrorMessage = null;
+        postsErrorMessage = null;
+        commentsErrorMessage = null;
+
+        try
+        {
+            user = await UserService.GetByIdAsync(Id);
+        }
+        catch (HttpRequestException exception) when (exception.StatusCode == System.Net.HttpStatusCode.NotFound)
+        {
+            userNotFound = true;
+        }
+        catch (HttpRequestException)
+        {
+            userErrorMessage = "The user could not be loaded. Make sure the Web API is running and try again.";
+        }
+        finally
+        {
+            isUserLoading = false;
+        }
+
+        if (user is not null)
+        {
+            await Task.WhenAll(LoadPostsAsync(), LoadCommentsAsync());
+        }
+    }
+
+    private async Task LoadPostsAsync()
+    {
+        isPostsLoading = true;
+
+        try
+        {
+            posts = await PostService.GetManyAsync(userId: Id);
+        }
+        catch (HttpRequestException)
+        {
+            postsErrorMessage = "Posts could not be loaded. Try again shortly.";
+        }
+        finally
+        {
+            isPostsLoading = false;
+        }
+    }
+
+    private async Task LoadCommentsAsync()
+    {
+        isCommentsLoading = true;
+
+        try
+        {
+            comments = await CommentService.GetManyAsync(userId: Id);
+        }
+        catch (HttpRequestException)
+        {
+            commentsErrorMessage = "Comments could not be loaded. Try again shortly.";
+        }
+        finally
+        {
+            isCommentsLoading = false;
+        }
+    }
+
+    private static string GetBodyPreview(string body)
+    {
+        const int maximumLength = 140;
+        return body.Length <= maximumLength ? body : $"{body[..maximumLength]}…";
+    }
+}

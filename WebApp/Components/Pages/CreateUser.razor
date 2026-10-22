@@ -1,0 +1,79 @@
+@page "/users/new"
+@using DTOs
+@using WebApp.Services
+@inject IUserService UserService
+@inject NavigationManager Navigation
+
+<PageTitle>New user</PageTitle>
+
+<a class="back-link" href="users">← Back to users</a>
+
+<section class="user-composer-panel" aria-labelledby="create-user-heading">
+    <p class="eyebrow">ADMIN // NEW USER</p>
+    <h1 id="create-user-heading">Create a user</h1>
+    <p class="user-composer-copy">Create an account for the network. Credentials are never shown in the directory.</p>
+
+    @if (errorMessage is not null)
+    {
+        <div class="alert alert-danger" role="alert">@errorMessage</div>
+    }
+
+    <EditForm Model="model" OnValidSubmit="CreateUserAsync">
+        <DataAnnotationsValidator />
+        <ValidationSummary class="validation-summary" />
+
+        <div class="mb-4">
+            <label class="form-label" for="user-name">Username</label>
+            <InputText id="user-name" class="form-control" @bind-Value="model.UserName" />
+            <ValidationMessage For="() => model.UserName" />
+        </div>
+
+        <div>
+            <label class="form-label" for="user-password">Password</label>
+            <InputText id="user-password" class="form-control" type="password" @bind-Value="model.Password" />
+            <ValidationMessage For="() => model.Password" />
+        </div>
+
+        <div class="user-composer-actions">
+            <a class="btn btn-outline-secondary" href="users">Cancel</a>
+            <button class="btn btn-primary" type="submit" disabled="@isSubmitting">
+                @(isSubmitting ? "Creating…" : "Create user")
+            </button>
+        </div>
+    </EditForm>
+</section>
+
+@code {
+    private readonly CreateUserFormModel model = new();
+    private bool isSubmitting;
+    private string? errorMessage;
+
+    private async Task CreateUserAsync()
+    {
+        if (isSubmitting)
+        {
+            return;
+        }
+
+        isSubmitting = true;
+        errorMessage = null;
+
+        try
+        {
+            UserDTO createdUser = await UserService.AddUserAsync(new CreateUserDTO(model.UserName, model.Password));
+            Navigation.NavigateTo($"users/{createdUser.Id}");
+        }
+        catch (HttpRequestException exception) when (exception.StatusCode == System.Net.HttpStatusCode.Conflict)
+        {
+            errorMessage = "That username is already in use. Choose another one and try again.";
+        }
+        catch (HttpRequestException)
+        {
+            errorMessage = "The user could not be created. Make sure the Web API is running and try again.";
+        }
+        finally
+        {
+            isSubmitting = false;
+        }
+    }
+}
