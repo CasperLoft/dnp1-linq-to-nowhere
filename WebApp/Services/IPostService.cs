@@ -7,6 +7,8 @@ public interface IPostService
     Task<PostDTO> AddPostAsync(CreatePostDTO request);
     Task UpdatePostAsync(UpdatePostDTO request);
 
+    Task<PostDTO> GetByIdAsync(int id);
+
     Task<IReadOnlyCollection<PostDTO>> GetManyAsync(
         int? userId = null,
         string? titleContains = null,

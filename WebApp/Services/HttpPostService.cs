@@ -19,6 +19,22 @@ public sealed class HttpPostService(HttpClient client) : IPostService
         throw new NotSupportedException("Updating a post requires its ID, which is not part of UpdatePostDTO.");
     }
 
+    public async Task<PostDTO> GetByIdAsync(int id)
+    {
+        using HttpResponseMessage response = await client.GetAsync($"posts/{id}");
+
+        if (!response.IsSuccessStatusCode)
+        {
+            throw new HttpRequestException(
+                $"The post request failed with status code {(int)response.StatusCode}.",
+                null,
+                response.StatusCode);
+        }
+
+        return await response.Content.ReadFromJsonAsync<PostDTO>()
+               ?? throw new HttpRequestException("The posts API returned an empty response.");
+    }
+
     public async Task<IReadOnlyCollection<PostDTO>> GetManyAsync(
         int? userId = null,
         string? titleContains = null,

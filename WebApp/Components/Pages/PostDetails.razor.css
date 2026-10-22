@@ -1,0 +1,25 @@
+.back-link {
+    display: inline-block;
+    margin-bottom: 1.5rem;
+    color: var(--cyan);
+    font-size: 0.85rem;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.post-detail-panel {
+    padding: clamp(1.5rem, 4vw, 3rem);
+    border: 1px solid var(--line);
+    background: linear-gradient(135deg, rgba(18, 29, 54, 0.92), rgba(7, 11, 24, 0.72));
+}
+
+.post-body {
+    max-width: 75ch;
+    margin: 1.5rem 0;
+    line-height: 1.7;
+    white-space: pre-wrap;
+}
+
+.comment-card {
+    border-color: var(--line);
+}

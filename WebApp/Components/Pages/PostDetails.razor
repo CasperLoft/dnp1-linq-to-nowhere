@@ -1,0 +1,135 @@
+@page "/posts/{Id:int}"
+@using DTOs
+@using WebApp.Services
+@inject IPostService PostService
+@inject ICommentService CommentService
+
+<PageTitle>@(post?.Title ?? "Post")</PageTitle>
+
+<a class="back-link" href="posts">← Back to posts</a>
+
+@if (isPostLoading)
+{
+    <p class="text-secondary" role="status">Loading post…</p>
+}
+else if (postNotFound)
+{
+    <div class="alert alert-warning" role="alert">This post no longer exists.</div>
+}
+else if (postErrorMessage is not null)
+{
+    <div class="alert alert-danger" role="alert">@postErrorMessage</div>
+}
+else if (post is not null)
+{
+    <article class="post-detail-panel mb-5">
+        <p class="eyebrow">POST // @post.Id</p>
+        <h1>@post.Title</h1>
+        <p class="post-body">@post.Body</p>
+        <p class="text-secondary mb-0">Author user ID: @post.UserId</p>
+    </article>
+
+    <section aria-labelledby="comments-heading">
+        <h2 id="comments-heading">Comments</h2>
+
+        @if (isCommentsLoading)
+        {
+            <p class="text-secondary" role="status">Loading comments…</p>
+        }
+        else if (commentsErrorMessage is not null)
+        {
+            <div class="alert alert-danger" role="alert">@commentsErrorMessage</div>
+        }
+        else if (comments.Count == 0)
+        {
+            <p class="text-secondary">No comments yet.</p>
+        }
+        else
+        {
+            <div class="row row-cols-1 row-cols-lg-2 g-3">
+                @foreach (CommentDTO comment in comments)
+                {
+                    <div class="col">
+                        <article class="card h-100 comment-card">
+                            <div class="card-body">
+                                <p class="card-text mb-0">@comment.Body</p>
+                            </div>
+                            <div class="card-footer bg-transparent text-secondary small">
+                                User ID: @comment.UserId
+                            </div>
+                        </article>
+                    </div>
+                }
+            </div>
+        }
+    </section>
+}
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+
+    private PostDTO? post;
+    private IReadOnlyCollection<CommentDTO> comments = [];
+    private bool isPostLoading;
+    private bool isCommentsLoading;
+    private bool postNotFound;
+    private string? postErrorMessage;
+    private string? commentsErrorMessage;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await LoadPostAsync();
+    }
+
+    private async Task LoadPostAsync()
+    {
+        isPostLoading = true;
+        isCommentsLoading = false;
+        post = null;
+        comments = [];
+        postNotFound = false;
+        postErrorMessage = null;
+        commentsErrorMessage = null;
+
+        try
+        {
+            post = await PostService.GetByIdAsync(Id);
+        }
+        catch (HttpRequestException exception) when (exception.StatusCode == System.Net.HttpStatusCode.NotFound)
+        {
+            postNotFound = true;
+        }
+        catch (HttpRequestException)
+        {
+            postErrorMessage = "The post could not be loaded. Make sure the Web API is running and try again.";
+        }
+        finally
+        {
+            isPostLoading = false;
+        }
+
+        if (post is not null)
+        {
+            await LoadCommentsAsync();
+        }
+    }
+
+    private async Task LoadCommentsAsync()
+    {
+        isCommentsLoading = true;
+
+        try
+        {
+            comments = await CommentService.GetManyAsync(postId: Id);
+        }
+        catch (HttpRequestException)
+        {
+            commentsErrorMessage = "Comments could not be loaded. Try again shortly.";
+        }
+        finally
+        {
+            isCommentsLoading = false;
+        }
+    }
+}

@@ -39,15 +39,17 @@ else
         @foreach (PostDTO post in posts)
         {
             <div class="col">
-                <article class="card h-100 shadow-sm post-card">
-                    <div class="card-body">
-                        <h2 class="h5 card-title">@post.Title</h2>
-                        <p class="card-text">@GetBodyPreview(post.Body)</p>
-                    </div>
-                    <div class="card-footer bg-transparent text-secondary small">
-                        User ID: @post.UserId
-                    </div>
-                </article>
+                <a class="post-card-link" href="@($"posts/{post.Id}")">
+                    <article class="card h-100 shadow-sm post-card">
+                        <div class="card-body">
+                            <h2 class="h5 card-title">@post.Title</h2>
+                            <p class="card-text">@GetBodyPreview(post.Body)</p>
+                        </div>
+                        <div class="card-footer bg-transparent text-secondary small">
+                            User ID: @post.UserId
+                        </div>
+                    </article>
+                </a>
             </div>
         }
     </div>
