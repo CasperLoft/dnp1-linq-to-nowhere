@@ -27,7 +27,8 @@ public class UserService : IUserService
         User created = await _userRepository.AddAsync(new User
         {
             UserName = request.UserName,
-            Password = request.Password
+            Password = request.Password,
+            Role = request.Role
         });
 
         return ToDto(created);
@@ -66,6 +67,7 @@ public class UserService : IUserService
 
         user.UserName = request.UserName;
         user.Password = request.Password;
+        user.Role = request.Role;
         await _userRepository.UpdateAsync(user);
 
         return ToDto(user);
