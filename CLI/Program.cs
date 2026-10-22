@@ -1,5 +1,8 @@
 ﻿using CLI.UI;
+using DevelopmentData;
+using Entities;
 using FileRepositories;
+using Microsoft.AspNetCore.Identity;
 using RepositoryContracts;
 
 string dataDirectory = Path.Combine(
@@ -9,6 +12,21 @@ string dataDirectory = Path.Combine(
 IUserRepository userRepository = new UserFileRepository(dataDirectory);
 IPostRepository postRepository = new PostFileRepository(dataDirectory);
 ICommentRepository commentRepository = new CommentFileRepository(dataDirectory);
+
+if (args.SequenceEqual(["seed", "--reset"]))
+{
+    var seeder = new DevelopmentDataSeeder(
+        userRepository,
+        postRepository,
+        commentRepository,
+        new PasswordHasher<User>());
+
+    await seeder.ResetAndSeedAsync();
+    Console.WriteLine("Development data reset complete.");
+    Console.WriteLine("Accounts: Alice (Admin), Bob (Moderator), Charlie (User).");
+    Console.WriteLine($"Development password: {DevelopmentDataSeeder.DevelopmentPassword}");
+    return;
+}
 
 CliApp cliApp = new CliApp(userRepository, commentRepository, postRepository);
 await cliApp.StartAsync();
