@@ -1,0 +1,100 @@
+@page "/posts"
+@using DTOs
+@using WebApp.Services
+@inject IPostService PostService
+
+<PageTitle>Posts</PageTitle>
+
+<h1>Posts</h1>
+
+<form class="row g-2 mb-4" @onsubmit="SearchAsync" @onsubmit:preventDefault>
+    <div class="col-sm-8 col-md-6">
+        <label class="visually-hidden" for="title-search">Search post titles</label>
+        <input id="title-search"
+               class="form-control"
+               @bind="titleContains"
+               placeholder="Search post titles" />
+    </div>
+    <div class="col-auto d-flex gap-2">
+        <button class="btn btn-primary" type="submit">Search</button>
+        <button class="btn btn-outline-secondary" type="button" @onclick="ClearAsync">Clear</button>
+    </div>
+</form>
+
+@if (isLoading)
+{
+    <p class="text-secondary" role="status">Loading posts…</p>
+}
+else if (errorMessage is not null)
+{
+    <div class="alert alert-danger" role="alert">@errorMessage</div>
+}
+else if (posts.Count == 0)
+{
+    <p class="text-secondary">No posts match your search.</p>
+}
+else
+{
+    <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-3">
+        @foreach (PostDTO post in posts)
+        {
+            <div class="col">
+                <article class="card h-100 shadow-sm post-card">
+                    <div class="card-body">
+                        <h2 class="h5 card-title">@post.Title</h2>
+                        <p class="card-text">@GetBodyPreview(post.Body)</p>
+                    </div>
+                    <div class="card-footer bg-transparent text-secondary small">
+                        User ID: @post.UserId
+                    </div>
+                </article>
+            </div>
+        }
+    </div>
+}
+
+@code {
+    private IReadOnlyCollection<PostDTO> posts = [];
+    private string titleContains = string.Empty;
+    private bool isLoading = true;
+    private string? errorMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadPostsAsync();
+    }
+
+    private Task SearchAsync() => LoadPostsAsync();
+
+    private async Task ClearAsync()
+    {
+        titleContains = string.Empty;
+        await LoadPostsAsync();
+    }
+
+    private async Task LoadPostsAsync()
+    {
+        isLoading = true;
+        errorMessage = null;
+
+        try
+        {
+            posts = await PostService.GetManyAsync(titleContains: titleContains);
+        }
+        catch (HttpRequestException)
+        {
+            errorMessage = "Posts could not be loaded. Make sure the Web API is running and try again.";
+            posts = [];
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private static string GetBodyPreview(string body)
+    {
+        const int maximumLength = 140;
+        return body.Length <= maximumLength ? body : $"{body[..maximumLength]}…";
+    }
+}

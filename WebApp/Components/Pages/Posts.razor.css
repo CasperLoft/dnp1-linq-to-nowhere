@@ -1,0 +1,9 @@
+.post-card {
+    border-color: var(--bs-border-color);
+    transition: box-shadow 0.15s ease-in-out, transform 0.15s ease-in-out;
+}
+
+.post-card:hover {
+    box-shadow: var(--bs-box-shadow) !important;
+    transform: translateY(-2px);
+}

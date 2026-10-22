@@ -3,3 +3,19 @@ obj/
 /packages/
 riderModule.iml
 /_ReSharper.Caches/
+
+# IDE and user-specific settings
+.vs/
+.idea/
+*.suo
+*.user
+*.userosscache
+*.sln.iml
+*.DotSettings.user
+
+# Operating-system metadata
+.DS_Store
+
+# Local course reference material and temporary Office lock files
+docs/assignments/**/*.docx
+docs/assignments/**/~$*.docx
