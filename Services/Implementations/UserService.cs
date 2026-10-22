@@ -1,20 +1,25 @@
 using DTOs;
 using Entities;
+using Microsoft.AspNetCore.Identity;
 using RepositoryContracts;
 
-namespace Services;
+namespace Services.Implementations;
 
 public class UserService : IUserService
 {
+    private readonly IPasswordHasher<User> _passwordHasher;
+
     private readonly IUserRepository _userRepository;
     private readonly IPostRepository _postRepository;
     private readonly ICommentRepository _commentRepository;
 
     public UserService(
+        IPasswordHasher<User> passwordHasher,
         IUserRepository userRepository,
         IPostRepository postRepository,
         ICommentRepository commentRepository)
     {
+        _passwordHasher = passwordHasher;
         _userRepository = userRepository;
         _postRepository = postRepository;
         _commentRepository = commentRepository;
@@ -24,12 +29,15 @@ public class UserService : IUserService
     {
         EnsureUserNameIsAvailable(request.UserName);
 
-        User created = await _userRepository.AddAsync(new User
+        var user = new User
         {
             UserName = request.UserName,
-            Password = request.Password,
             Role = request.Role
-        });
+        };
+
+        user.PasswordHash = _passwordHasher.HashPassword(user, request.Password);
+
+        User created = await _userRepository.AddAsync(user);
 
         return ToDto(created);
     }
@@ -60,14 +68,17 @@ public class UserService : IUserService
     {
         User user = await GetUserAsync(id);
 
-        if (!string.Equals(user.UserName, request.UserName, StringComparison.OrdinalIgnoreCase))
+        if (!string.Equals(
+                user.UserName,
+                request.UserName,
+                StringComparison.OrdinalIgnoreCase))
         {
             EnsureUserNameIsAvailable(request.UserName, id);
         }
 
         user.UserName = request.UserName;
-        user.Password = request.Password;
         user.Role = request.Role;
+
         await _userRepository.UpdateAsync(user);
 
         return ToDto(user);

@@ -37,8 +37,8 @@ public class PostServiceTests
         var users = new Mock<IUserRepository>();
         users.Setup(repository => repository.GetManyAsync()).Returns(new[]
         {
-            new User { Id = 2, UserName = "ada", Password = "secret" },
-            new User { Id = 3, UserName = "grace", Password = "secret" }
+            new User { Id = 2, UserName = "ada", PasswordHash = "secret" },
+            new User { Id = 3, UserName = "grace", PasswordHash = "secret" }
         }.AsQueryable());
 
         var service = new PostService(posts.Object, users.Object, Mock.Of<ICommentRepository>());

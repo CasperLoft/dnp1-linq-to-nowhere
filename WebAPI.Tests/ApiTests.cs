@@ -34,8 +34,8 @@ public class ApiTests : IClassFixture<ApiFactory>
     public async Task GetUsers_FiltersByUserName()
     {
         _factory.Users.Reset(
-            new User { Id = 1, UserName = "Ada", Password = "secret" },
-            new User { Id = 2, UserName = "Bob", Password = "secret" });
+            new User { Id = 1, UserName = "Ada", PasswordHash = "secret" },
+            new User { Id = 2, UserName = "Bob", PasswordHash = "secret" });
 
         HttpResponseMessage response = await _client.GetAsync("/users?userNameContains=ad");
 
@@ -48,7 +48,7 @@ public class ApiTests : IClassFixture<ApiFactory>
     [Fact]
     public async Task GetUser_ReturnsUserDto()
     {
-        _factory.Users.Reset(new User { Id = 2, UserName = "Bob", Password = "secret" });
+        _factory.Users.Reset(new User { Id = 2, UserName = "Bob", PasswordHash = "secret" });
 
         HttpResponseMessage response = await _client.GetAsync("/users/2");
 
@@ -59,7 +59,7 @@ public class ApiTests : IClassFixture<ApiFactory>
     [Fact]
     public async Task GetPosts_PassesAllFiltersToService()
     {
-        _factory.Users.Reset(new User { Id = 2, UserName = "ada", Password = "secret" });
+        _factory.Users.Reset(new User { Id = 2, UserName = "ada", PasswordHash = "secret" });
         _factory.Posts.Reset(new Post { Id = 3, UserId = 2, Title = "LINQ", Body = "Body" });
 
         HttpResponseMessage response = await _client.GetAsync("/posts?userId=2&titleContains=linq&userNameContains=ada");
@@ -73,7 +73,7 @@ public class ApiTests : IClassFixture<ApiFactory>
     [Fact]
     public async Task CreatePost_ReturnsCreatedDtoWithAuthorUserName()
     {
-        _factory.Users.Reset(new User { Id = 1, UserName = "alice", Password = "secret" });
+        _factory.Users.Reset(new User { Id = 1, UserName = "alice", PasswordHash = "secret" });
         _factory.Posts.Reset();
 
         HttpResponseMessage response = await _client.PostAsJsonAsync(
@@ -94,7 +94,7 @@ public class ApiTests : IClassFixture<ApiFactory>
     [Fact]
     public async Task GetComments_ReturnsUserName()
     {
-        _factory.Users.Reset(new User { Id = 2, UserName = "ada", Password = "secret" });
+        _factory.Users.Reset(new User { Id = 2, UserName = "ada", PasswordHash = "secret" });
         _factory.Comments.Reset(new Comment { Id = 4, UserId = 2, PostId = 3, Body = "Nice post" });
 
         HttpResponseMessage response = await _client.GetAsync("/comments?postId=3");
@@ -108,7 +108,7 @@ public class ApiTests : IClassFixture<ApiFactory>
     [Fact]
     public async Task CreateComment_ReturnsCreatedDtoWithAuthorUserName()
     {
-        _factory.Users.Reset(new User { Id = 1, UserName = "alice", Password = "secret" });
+        _factory.Users.Reset(new User { Id = 1, UserName = "alice", PasswordHash = "secret" });
         _factory.Posts.Reset(new Post { Id = 3, UserId = 1, Title = "Post", Body = "Body" });
         _factory.Comments.Reset();
 
@@ -140,7 +140,7 @@ public class ApiTests : IClassFixture<ApiFactory>
     [Fact]
     public async Task CreateUser_MapsDuplicateNameToConflictProblem()
     {
-        _factory.Users.Reset(new User { Id = 1, UserName = "ada", Password = "secret" });
+        _factory.Users.Reset(new User { Id = 1, UserName = "ada", PasswordHash = "secret" });
 
         HttpResponseMessage response = await _client.PostAsJsonAsync("/users", new CreateUserRequest("ada", "secret", UserRole.User));
 

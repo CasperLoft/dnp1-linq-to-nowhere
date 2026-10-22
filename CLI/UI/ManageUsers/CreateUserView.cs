@@ -1,4 +1,5 @@
 using Entities;
+using Microsoft.AspNetCore.Identity;
 using RepositoryContracts;
 
 namespace CLI.UI.ManageUsers;
@@ -17,14 +18,15 @@ public class CreateUserView
         string username = CliApp.ReadRequiredInput("Enter username: ");
         string password = CliApp.ReadRequiredInput("Enter password: ");
 
-        var newuser = new User
+        var newUser = new User
         {
-            UserName = username,
-            Password = password
+            UserName = username
         };
 
-        User createdUser = await _userRepository.AddAsync(newuser);
-        
+        newUser.PasswordHash = new PasswordHasher<User>().HashPassword(newUser, password);
+
+        User createdUser = await _userRepository.AddAsync(newUser);
+
         Console.WriteLine($"User created with ID: {createdUser.Id}");
         Console.WriteLine();
         Console.WriteLine("Press any key to return...");

@@ -2,4 +2,4 @@ using Enums;
 
 namespace DTOs;
 
-public record UpdateUserRequest(string UserName, string Password, UserRole Role);
+public record UpdateUserRequest(string UserName, UserRole Role);

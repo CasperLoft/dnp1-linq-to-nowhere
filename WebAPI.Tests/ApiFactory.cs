@@ -66,6 +66,11 @@ public class TestRepository<T> where T : IEntity
     public IQueryable<T> GetManyAsync() => Items.AsQueryable();
 }
 
-public sealed class TestUserRepository : TestRepository<User>, IUserRepository;
+public sealed class TestUserRepository : TestRepository<User>, IUserRepository
+{
+    public Task<User?> GetByUsernameAsync(string username) =>
+        Task.FromResult(Items.FirstOrDefault(user =>
+            string.Equals(user.UserName, username, StringComparison.OrdinalIgnoreCase)));
+}
 public sealed class TestPostRepository : TestRepository<Post>, IPostRepository;
 public sealed class TestCommentRepository : TestRepository<Comment>, ICommentRepository;

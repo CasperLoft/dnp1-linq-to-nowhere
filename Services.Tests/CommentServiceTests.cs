@@ -22,8 +22,8 @@ public class CommentServiceTests
         var users = new Mock<IUserRepository>();
         users.Setup(repository => repository.GetManyAsync()).Returns(new[]
         {
-            new User { Id = 2, UserName = "ada", Password = "secret" },
-            new User { Id = 5, UserName = "grace", Password = "secret" }
+            new User { Id = 2, UserName = "ada", PasswordHash = "secret" },
+            new User { Id = 5, UserName = "grace", PasswordHash = "secret" }
         }.AsQueryable());
 
         var service = new CommentService(comments.Object, users.Object, Mock.Of<IPostRepository>());

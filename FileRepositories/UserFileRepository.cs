@@ -9,4 +9,12 @@ public class UserFileRepository : FileRepository<User>, IUserRepository
         : base(dataDirectory)
     {
     }
+
+    public async Task<User?> GetByUsernameAsync(string username)
+    {
+        List<User> users = await LoadAsync();
+
+        return users.FirstOrDefault(u =>
+            u.UserName.Equals(username, StringComparison.OrdinalIgnoreCase));
+    }
 }

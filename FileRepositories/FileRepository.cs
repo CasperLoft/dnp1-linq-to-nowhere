@@ -16,7 +16,7 @@ public class FileRepository<T> where T : IEntity
     // 1. The file does not exist yet.
     // 2. The file exists but has no content or only whitespace.
     // 3. The file contains the valid JSON value `null`.
-    private async Task<List<T>> LoadAsync()
+    protected async Task<List<T>> LoadAsync()
     {
         if (!File.Exists(_filePath))
         {

@@ -1,6 +1,9 @@
+using Entities;
 using FileRepositories;
+using Microsoft.AspNetCore.Identity;
 using RepositoryContracts;
 using Services;
+using Services.Implementations;
 using WebAPI;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -13,6 +16,9 @@ builder.Services.AddExceptionHandler<ApiExceptionHandler>();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
+builder.Services.AddScoped<IAuthService, AuthService>();
 
 builder.Services.AddScoped<IPostRepository>(_ => new PostFileRepository(dataDirectory));
 builder.Services.AddScoped<IUserRepository>(_ => new UserFileRepository(dataDirectory));

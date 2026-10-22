@@ -1,9 +1,11 @@
 using DTOs;
 using Entities;
 using Enums;
+using Microsoft.AspNetCore.Identity;
 using Moq;
 using RepositoryContracts;
 using Services;
+using Services.Implementations;
 
 namespace Services.Tests;
 
@@ -20,13 +22,16 @@ public class UserServiceTests
             return user;
         });
 
-        var service = new UserService(users.Object, Mock.Of<IPostRepository>(), Mock.Of<ICommentRepository>());
+        var passwordHasher = new PasswordHasher<User>();
+        var service = new UserService(passwordHasher, users.Object, Mock.Of<IPostRepository>(), Mock.Of<ICommentRepository>());
 
         UserResponse result = await service.CreateAsync(new CreateUserRequest("ada", "secret", UserRole.User));
 
         Assert.Equal(new UserResponse(4, "ada", UserRole.User), result);
         users.Verify(repository => repository.AddAsync(It.Is<User>(user =>
-            user.UserName == "ada" && user.Password == "secret")), Times.Once);
+            user.UserName == "ada" &&
+            user.Role == UserRole.User &&
+            passwordHasher.VerifyHashedPassword(user, user.PasswordHash, "secret") != PasswordVerificationResult.Failed)), Times.Once);
     }
 
     [Fact]
@@ -35,10 +40,10 @@ public class UserServiceTests
         var users = new Mock<IUserRepository>();
         users.Setup(repository => repository.GetManyAsync()).Returns(new[]
         {
-            new User { Id = 1, UserName = "Ada", Password = "secret" }
+            new User { Id = 1, UserName = "Ada", PasswordHash = "secret" }
         }.AsQueryable());
 
-        var service = new UserService(users.Object, Mock.Of<IPostRepository>(), Mock.Of<ICommentRepository>());
+        var service = new UserService(new PasswordHasher<User>(), users.Object, Mock.Of<IPostRepository>(), Mock.Of<ICommentRepository>());
 
         await Assert.ThrowsAsync<ConflictException>(() =>
             service.CreateAsync(new CreateUserRequest("ada", "another-secret", UserRole.User)));
@@ -49,7 +54,7 @@ public class UserServiceTests
     public async Task DeleteAsync_RejectsUserWithPosts()
     {
         var users = new Mock<IUserRepository>();
-        users.Setup(repository => repository.GetByIdAsync(1)).ReturnsAsync(new User { Id = 1, UserName = "ada", Password = "secret" });
+        users.Setup(repository => repository.GetByIdAsync(1)).ReturnsAsync(new User { Id = 1, UserName = "ada", PasswordHash = "secret" });
 
         var posts = new Mock<IPostRepository>();
         posts.Setup(repository => repository.GetManyAsync()).Returns(new[]
@@ -57,7 +62,7 @@ public class UserServiceTests
             new Post { Id = 8, UserId = 1, Title = "Title", Body = "Body" }
         }.AsQueryable());
 
-        var service = new UserService(users.Object, posts.Object, Mock.Of<ICommentRepository>());
+        var service = new UserService(new PasswordHasher<User>(), users.Object, posts.Object, Mock.Of<ICommentRepository>());
 
         await Assert.ThrowsAsync<ConflictException>(() => service.DeleteAsync(1));
         users.Verify(repository => repository.DeleteAsync(It.IsAny<int>()), Times.Never);
