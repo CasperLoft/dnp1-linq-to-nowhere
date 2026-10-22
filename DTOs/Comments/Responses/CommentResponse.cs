@@ -1,6 +1,6 @@
 namespace DTOs;
 
-public record CommentDTO(
+public record CommentResponse(
     int Id,
     string Body,
     int UserId,

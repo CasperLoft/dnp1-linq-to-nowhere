@@ -19,7 +19,7 @@ public class PostServiceTests
         var service = new PostService(posts.Object, users.Object, Mock.Of<ICommentRepository>());
 
         await Assert.ThrowsAsync<ResourceNotFoundException>(() =>
-            service.CreateAsync(new CreatePostDTO("Title", "Body", 99)));
+            service.CreateAsync(new CreatePostRequest("Title", "Body", 99)));
         posts.Verify(repository => repository.AddAsync(It.IsAny<Post>()), Times.Never);
     }
 
@@ -43,9 +43,9 @@ public class PostServiceTests
 
         var service = new PostService(posts.Object, users.Object, Mock.Of<ICommentRepository>());
 
-        IReadOnlyCollection<PostDTO> result = await service.GetManyAsync(2, "linq");
+        IReadOnlyCollection<PostResponse> result = await service.GetManyAsync(2, "linq");
 
-        Assert.Collection(result, post => Assert.Equal(new PostDTO(1, "Learning LINQ", "Body", 2, "ada"), post));
+        Assert.Collection(result, post => Assert.Equal(new PostResponse(1, "Learning LINQ", "Body", 2, "ada"), post));
     }
 
     [Fact]

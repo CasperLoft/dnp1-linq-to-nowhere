@@ -1,8 +1,11 @@
-﻿namespace Entities;
+﻿using Enums;
+
+namespace Entities;
 
 public class User : IEntity
 {
     public int Id { get; set; }
     public string UserName { get; set; } = string.Empty;
     public string Password { get; set; } = string.Empty;
+    public UserRole Role { get; set; } = UserRole.User;
 }

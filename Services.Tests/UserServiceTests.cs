@@ -1,5 +1,6 @@
 using DTOs;
 using Entities;
+using Enums;
 using Moq;
 using RepositoryContracts;
 using Services;
@@ -21,9 +22,9 @@ public class UserServiceTests
 
         var service = new UserService(users.Object, Mock.Of<IPostRepository>(), Mock.Of<ICommentRepository>());
 
-        UserDTO result = await service.CreateAsync(new CreateUserDTO("ada", "secret"));
+        UserResponse result = await service.CreateAsync(new CreateUserRequest("ada", "secret", UserRole.User));
 
-        Assert.Equal(new UserDTO(4, "ada"), result);
+        Assert.Equal(new UserResponse(4, "ada", UserRole.User), result);
         users.Verify(repository => repository.AddAsync(It.Is<User>(user =>
             user.UserName == "ada" && user.Password == "secret")), Times.Once);
     }
@@ -40,7 +41,7 @@ public class UserServiceTests
         var service = new UserService(users.Object, Mock.Of<IPostRepository>(), Mock.Of<ICommentRepository>());
 
         await Assert.ThrowsAsync<ConflictException>(() =>
-            service.CreateAsync(new CreateUserDTO("ada", "another-secret")));
+            service.CreateAsync(new CreateUserRequest("ada", "another-secret", UserRole.User)));
         users.Verify(repository => repository.AddAsync(It.IsAny<User>()), Times.Never);
     }
 

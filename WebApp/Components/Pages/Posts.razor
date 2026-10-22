@@ -39,7 +39,7 @@ else if (posts.Count == 0)
 else
 {
     <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-3">
-        @foreach (PostDTO post in posts)
+        @foreach (PostResponse post in posts)
         {
             <div class="col">
                 <a class="post-card-link" href="@($"posts/{post.Id}")">
@@ -59,7 +59,7 @@ else
 }
 
 @code {
-    private IReadOnlyCollection<PostDTO> posts = [];
+    private IReadOnlyCollection<PostResponse> posts = [];
     private string titleContains = string.Empty;
     private bool isLoading = true;
     private string? errorMessage;

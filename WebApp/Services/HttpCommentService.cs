@@ -1,24 +1,25 @@
 using DTOs;
+using DTOs.Comments.Requests;
 
 namespace WebApp.Services;
 
 public sealed class HttpCommentService(HttpClient client) : ICommentService
 {
-    public async Task<CommentDTO> AddCommentAsync(CreateCommentDTO request)
+    public async Task<CommentResponse> AddCommentAsync(CreateCommentRequest request)
     {
         using HttpResponseMessage response = await client.PostAsJsonAsync("comments", request);
         response.EnsureSuccessStatusCode();
 
-        return await response.Content.ReadFromJsonAsync<CommentDTO>()
+        return await response.Content.ReadFromJsonAsync<CommentResponse>()
                ?? throw new HttpRequestException("The comments API returned an empty response.");
     }
 
-    public Task UpdateCommentAsync(UpdateCommentDTO request)
+    public Task UpdateCommentAsync(UpdateCommentRequest request)
     {
         throw new NotImplementedException();
     }
 
-    public async Task<IReadOnlyCollection<CommentDTO>> GetManyAsync(int? postId = null, int? userId = null)
+    public async Task<IReadOnlyCollection<CommentResponse>> GetManyAsync(int? postId = null, int? userId = null)
     {
         var commentsList = new List<string>();
 
@@ -40,6 +41,6 @@ public sealed class HttpCommentService(HttpClient client) : ICommentService
             throw new HttpRequestException($"The comments request failed with status code {(int)response.StatusCode}.");
         }
 
-        return await response.Content.ReadFromJsonAsync<CommentDTO[]>() ?? [];
+        return await response.Content.ReadFromJsonAsync<CommentResponse[]>() ?? [];
     }
 }

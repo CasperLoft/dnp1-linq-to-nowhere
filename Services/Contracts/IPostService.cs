@@ -4,12 +4,12 @@ namespace Services;
 
 public interface IPostService
 {
-    Task<PostDTO> CreateAsync(CreatePostDTO request);
-    Task<PostDTO> GetByIdAsync(int id);
-    Task<IReadOnlyCollection<PostDTO>> GetManyAsync(
+    Task<PostResponse> CreateAsync(CreatePostRequest request);
+    Task<PostResponse> GetByIdAsync(int id);
+    Task<IReadOnlyCollection<PostResponse>> GetManyAsync(
         int? userId = null,
         string? titleContains = null,
         string? userNameContains = null);
-    Task<PostDTO> UpdateAsync(int id, UpdatePostDTO request);
+    Task<PostResponse> UpdateAsync(int id, UpdatePostRequest request);
     Task DeleteAsync(int id);
 }

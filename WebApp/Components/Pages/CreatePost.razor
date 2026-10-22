@@ -62,8 +62,8 @@
 
         try
         {
-            PostDTO createdPost = await PostService.AddPostAsync(
-                new CreatePostDTO(model.Title, model.Body, TemporaryAuthorId));
+            PostResponse createdPost = await PostService.AddPostAsync(
+                new CreatePostRequest(model.Title, model.Body, TemporaryAuthorId));
 
             Navigation.NavigateTo($"posts/{createdPost.Id}");
         }

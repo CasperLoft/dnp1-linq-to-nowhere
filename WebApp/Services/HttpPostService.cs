@@ -5,21 +5,21 @@ namespace WebApp.Services;
 
 public sealed class HttpPostService(HttpClient client) : IPostService
 {
-    public async Task<PostDTO> AddPostAsync(CreatePostDTO request)
+    public async Task<PostResponse> AddPostAsync(CreatePostRequest request)
     {
         using HttpResponseMessage response = await client.PostAsJsonAsync("posts", request);
         response.EnsureSuccessStatusCode();
 
-        return await response.Content.ReadFromJsonAsync<PostDTO>()
+        return await response.Content.ReadFromJsonAsync<PostResponse>()
                ?? throw new HttpRequestException("The posts API returned an empty response.");
     }
 
-    public Task UpdatePostAsync(UpdatePostDTO request)
+    public Task UpdatePostAsync(UpdatePostRequest request)
     {
         throw new NotSupportedException("Updating a post requires its ID, which is not part of UpdatePostDTO.");
     }
 
-    public async Task<PostDTO> GetByIdAsync(int id)
+    public async Task<PostResponse> GetByIdAsync(int id)
     {
         using HttpResponseMessage response = await client.GetAsync($"posts/{id}");
 
@@ -31,11 +31,11 @@ public sealed class HttpPostService(HttpClient client) : IPostService
                 response.StatusCode);
         }
 
-        return await response.Content.ReadFromJsonAsync<PostDTO>()
+        return await response.Content.ReadFromJsonAsync<PostResponse>()
                ?? throw new HttpRequestException("The posts API returned an empty response.");
     }
 
-    public async Task<IReadOnlyCollection<PostDTO>> GetManyAsync(
+    public async Task<IReadOnlyCollection<PostResponse>> GetManyAsync(
         int? userId = null,
         string? titleContains = null,
         string? userNameContains = null)
@@ -58,7 +58,7 @@ public sealed class HttpPostService(HttpClient client) : IPostService
             throw new HttpRequestException($"The posts request failed with status code {(int)response.StatusCode}.");
         }
 
-        return await response.Content.ReadFromJsonAsync<PostDTO[]>() ?? [];
+        return await response.Content.ReadFromJsonAsync<PostResponse[]>() ?? [];
     }
 
     private static void AddQueryValue(List<string> query, string name, string? value)

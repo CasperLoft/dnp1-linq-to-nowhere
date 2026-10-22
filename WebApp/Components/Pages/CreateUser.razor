@@ -1,5 +1,6 @@
 @page "/users/new"
 @using DTOs
+@using Enums
 @using WebApp.Services
 @inject IUserService UserService
 @inject NavigationManager Navigation
@@ -34,6 +35,17 @@
             <ValidationMessage For="() => model.Password" />
         </div>
 
+        <div>
+            <label class="form-label" for="user-role">Role</label>
+            <InputSelect id="user-role" class="form-select" @bind-Value="model.Role">
+            @foreach (var role in Enum.GetValues<UserRole>())
+            {
+                <option value="@role">@role</option>
+            }
+            </InputSelect>
+            <ValidationMessage For="() => model.Role" />
+        </div>
+        
         <div class="user-composer-actions">
             <a class="btn btn-outline-secondary" href="users">Cancel</a>
             <button class="btn btn-primary" type="submit" disabled="@isSubmitting">
@@ -60,7 +72,7 @@
 
         try
         {
-            UserDTO createdUser = await UserService.AddUserAsync(new CreateUserDTO(model.UserName, model.Password));
+            UserResponse createdUser = await UserService.AddUserAsync(new CreateUserRequest(model.UserName, model.Password, model.Role));
             Navigation.NavigateTo($"users/{createdUser.Id}");
         }
         catch (HttpRequestException exception) when (exception.StatusCode == System.Net.HttpStatusCode.Conflict)

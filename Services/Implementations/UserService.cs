@@ -20,7 +20,7 @@ public class UserService : IUserService
         _commentRepository = commentRepository;
     }
 
-    public async Task<UserDTO> CreateAsync(CreateUserDTO request)
+    public async Task<UserResponse> CreateAsync(CreateUserRequest request)
     {
         EnsureUserNameIsAvailable(request.UserName);
 
@@ -33,13 +33,13 @@ public class UserService : IUserService
         return ToDto(created);
     }
 
-    public async Task<UserDTO> GetByIdAsync(int id)
+    public async Task<UserResponse> GetByIdAsync(int id)
     {
         User user = await GetUserAsync(id);
         return ToDto(user);
     }
 
-    public Task<IReadOnlyCollection<UserDTO>> GetManyAsync(string? userNameContains = null)
+    public Task<IReadOnlyCollection<UserResponse>> GetManyAsync(string? userNameContains = null)
     {
         IQueryable<User> users = _userRepository.GetManyAsync();
 
@@ -48,14 +48,14 @@ public class UserService : IUserService
             users = users.Where(user => user.UserName.Contains(userNameContains, StringComparison.OrdinalIgnoreCase));
         }
 
-        IReadOnlyCollection<UserDTO> result = users
+        IReadOnlyCollection<UserResponse> result = users
             .Select(ToDto)
             .ToArray();
 
         return Task.FromResult(result);
     }
 
-    public async Task<UserDTO> UpdateAsync(int id, UpdateUserDTO request)
+    public async Task<UserResponse> UpdateAsync(int id, UpdateUserRequest request)
     {
         User user = await GetUserAsync(id);
 
@@ -112,5 +112,5 @@ public class UserService : IUserService
         }
     }
 
-    private static UserDTO ToDto(User user) => new(user.Id, user.UserName);
+    private static UserResponse ToDto(User user) => new(user.Id, user.UserName, user.Role);
 }

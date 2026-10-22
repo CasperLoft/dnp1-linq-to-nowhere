@@ -5,25 +5,25 @@ namespace WebApp.Services;
 
 public sealed class HttpUserService(HttpClient client) : IUserService
 {
-    public async Task<UserDTO> AddUserAsync(CreateUserDTO request)
+    public async Task<UserResponse> AddUserAsync(CreateUserRequest request)
     {
         using HttpResponseMessage response = await client.PostAsJsonAsync("users", request);
         EnsureSuccess(response, "create");
 
-        return await response.Content.ReadFromJsonAsync<UserDTO>()
+        return await response.Content.ReadFromJsonAsync<UserResponse>()
                ?? throw new HttpRequestException("The users API returned an empty response.");
     }
 
-    public async Task<UserDTO> GetByIdAsync(int id)
+    public async Task<UserResponse> GetByIdAsync(int id)
     {
         using HttpResponseMessage response = await client.GetAsync($"users/{id}");
         EnsureSuccess(response, "request");
 
-        return await response.Content.ReadFromJsonAsync<UserDTO>()
+        return await response.Content.ReadFromJsonAsync<UserResponse>()
                ?? throw new HttpRequestException("The users API returned an empty response.");
     }
 
-    public async Task<IReadOnlyCollection<UserDTO>> GetManyAsync(string? userNameContains = null)
+    public async Task<IReadOnlyCollection<UserResponse>> GetManyAsync(string? userNameContains = null)
     {
         string requestUri = string.IsNullOrWhiteSpace(userNameContains)
             ? "users"
@@ -31,10 +31,10 @@ public sealed class HttpUserService(HttpClient client) : IUserService
         using HttpResponseMessage response = await client.GetAsync(requestUri);
         EnsureSuccess(response, "request");
 
-        return await response.Content.ReadFromJsonAsync<UserDTO[]>() ?? [];
+        return await response.Content.ReadFromJsonAsync<UserResponse[]>() ?? [];
     }
 
-    public Task UpdateUserAsync(UpdateUserDTO request)
+    public Task UpdateUserAsync(UpdateUserRequest request)
     {
         throw new NotSupportedException("Updating a user requires its ID, which is not part of UpdateUserDTO.");
     }

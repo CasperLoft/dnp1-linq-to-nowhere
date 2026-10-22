@@ -1,4 +1,5 @@
 using DTOs;
+using DTOs.Comments.Requests;
 using Microsoft.AspNetCore.Mvc;
 using Services;
 
@@ -16,7 +17,7 @@ public class CommentsController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<IReadOnlyCollection<CommentDTO>>> GetMany(
+    public async Task<ActionResult<IReadOnlyCollection<CommentResponse>>> GetMany(
         [FromQuery] int? userId,
         [FromQuery] int? postId,
         [FromQuery] string? userNameContains)
@@ -25,20 +26,20 @@ public class CommentsController : ControllerBase
     }
 
     [HttpGet("{id:int}")]
-    public async Task<ActionResult<CommentDTO>> GetById(int id)
+    public async Task<ActionResult<CommentResponse>> GetById(int id)
     {
         return Ok(await _commentService.GetByIdAsync(id));
     }
 
     [HttpPost]
-    public async Task<ActionResult<CommentDTO>> Create([FromBody] CreateCommentDTO request)
+    public async Task<ActionResult<CommentResponse>> Create([FromBody] CreateCommentRequest request)
     {
-        CommentDTO created = await _commentService.CreateAsync(request);
+        CommentResponse created = await _commentService.CreateAsync(request);
         return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
     }
 
     [HttpPut("{id:int}")]
-    public async Task<ActionResult<CommentDTO>> Update(int id, [FromBody] UpdateCommentDTO request)
+    public async Task<ActionResult<CommentResponse>> Update(int id, [FromBody] UpdateCommentRequest request)
     {
         return Ok(await _commentService.UpdateAsync(id, request));
     }

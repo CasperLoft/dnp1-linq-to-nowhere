@@ -1,5 +1,6 @@
 @page "/posts/{Id:int}"
 @using DTOs
+@using DTOs.Comments.Requests
 @using WebApp.Services
 @inject IPostService PostService
 @inject ICommentService CommentService
@@ -71,7 +72,7 @@ else if (post is not null)
         else
         {
             <ol class="comment-thread">
-                @foreach (CommentDTO comment in comments.OrderByDescending(comment => comment.Id))
+                @foreach (CommentResponse comment in comments.OrderByDescending(comment => comment.Id))
                 {
                     <li class="comment-thread-item">
                         <article class="comment-card">
@@ -92,8 +93,8 @@ else if (post is not null)
     [Parameter]
     public int Id { get; set; }
 
-    private PostDTO? post;
-    private IReadOnlyCollection<CommentDTO> comments = [];
+    private PostResponse? post;
+    private IReadOnlyCollection<CommentResponse> comments = [];
     private readonly CreateCommentFormModel commentModel = new();
     private bool isPostLoading;
     private bool isCommentsLoading;
@@ -172,8 +173,8 @@ else if (post is not null)
 
         try
         {
-            CommentDTO createdComment = await CommentService.AddCommentAsync(
-                new CreateCommentDTO(commentModel.Body, 1, Id));
+            CommentResponse createdComment = await CommentService.AddCommentAsync(
+                new CreateCommentRequest(commentModel.Body, 1, Id));
 
             comments = [createdComment, .. comments];
             commentModel.Body = string.Empty;

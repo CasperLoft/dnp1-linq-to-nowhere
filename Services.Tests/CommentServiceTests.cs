@@ -28,8 +28,8 @@ public class CommentServiceTests
 
         var service = new CommentService(comments.Object, users.Object, Mock.Of<IPostRepository>());
 
-        IReadOnlyCollection<CommentDTO> result = await service.GetManyAsync(userId: 2, postId: 3);
+        IReadOnlyCollection<CommentResponse> result = await service.GetManyAsync(userId: 2, postId: 3);
 
-        Assert.Collection(result, comment => Assert.Equal(new CommentDTO(1, "Keep", 2, 3, "ada"), comment));
+        Assert.Collection(result, comment => Assert.Equal(new CommentResponse(1, "Keep", 2, 3, "ada"), comment));
     }
 }

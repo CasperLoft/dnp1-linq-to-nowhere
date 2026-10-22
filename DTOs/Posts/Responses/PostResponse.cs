@@ -1,6 +1,6 @@
 namespace DTOs;
 
-public record PostDTO(
+public record PostResponse(
     int Id,
     string Title,
     string Body,

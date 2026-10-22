@@ -4,9 +4,9 @@ namespace Services;
 
 public interface IUserService
 {
-    Task<UserDTO> CreateAsync(CreateUserDTO request);
-    Task<UserDTO> GetByIdAsync(int id);
-    Task<IReadOnlyCollection<UserDTO>> GetManyAsync(string? userNameContains = null);
-    Task<UserDTO> UpdateAsync(int id, UpdateUserDTO request);
+    Task<UserResponse> CreateAsync(CreateUserRequest request);
+    Task<UserResponse> GetByIdAsync(int id);
+    Task<IReadOnlyCollection<UserResponse>> GetManyAsync(string? userNameContains = null);
+    Task<UserResponse> UpdateAsync(int id, UpdateUserRequest request);
     Task DeleteAsync(int id);
 }

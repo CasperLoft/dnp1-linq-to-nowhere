@@ -4,12 +4,12 @@ namespace WebApp.Services;
 
 public interface IPostService
 {
-    Task<PostDTO> AddPostAsync(CreatePostDTO request);
-    Task UpdatePostAsync(UpdatePostDTO request);
+    Task<PostResponse> AddPostAsync(CreatePostRequest request);
+    Task UpdatePostAsync(UpdatePostRequest request);
 
-    Task<PostDTO> GetByIdAsync(int id);
+    Task<PostResponse> GetByIdAsync(int id);
 
-    Task<IReadOnlyCollection<PostDTO>> GetManyAsync(
+    Task<IReadOnlyCollection<PostResponse>> GetManyAsync(
         int? userId = null,
         string? titleContains = null,
         string? userNameContains = null);

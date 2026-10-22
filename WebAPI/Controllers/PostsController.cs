@@ -16,7 +16,7 @@ public class PostsController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<IReadOnlyCollection<PostDTO>>> GetMany(
+    public async Task<ActionResult<IReadOnlyCollection<PostResponse>>> GetMany(
         [FromQuery] int? userId,
         [FromQuery] string? titleContains,
         [FromQuery] string? userNameContains)
@@ -25,20 +25,20 @@ public class PostsController : ControllerBase
     }
 
     [HttpGet("{id:int}")]
-    public async Task<ActionResult<PostDTO>> GetById(int id)
+    public async Task<ActionResult<PostResponse>> GetById(int id)
     {
         return Ok(await _postService.GetByIdAsync(id));
     }
 
     [HttpPost]
-    public async Task<ActionResult<PostDTO>> Create([FromBody] CreatePostDTO request)
+    public async Task<ActionResult<PostResponse>> Create([FromBody] CreatePostRequest request)
     {
-        PostDTO created = await _postService.CreateAsync(request);
+        PostResponse created = await _postService.CreateAsync(request);
         return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
     }
 
     [HttpPut("{id:int}")]
-    public async Task<ActionResult<PostDTO>> Update(int id, [FromBody] UpdatePostDTO request)
+    public async Task<ActionResult<PostResponse>> Update(int id, [FromBody] UpdatePostRequest request)
     {
         return Ok(await _postService.UpdateAsync(id, request));
     }

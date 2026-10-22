@@ -1,7 +1,9 @@
 using System.Net;
 using System.Net.Http.Json;
 using DTOs;
+using DTOs.Comments.Requests;
 using Entities;
+using Enums;
 
 namespace WebAPI.Tests;
 
@@ -21,11 +23,11 @@ public class ApiTests : IClassFixture<ApiFactory>
     {
         _factory.Users.Reset();
 
-        HttpResponseMessage response = await _client.PostAsJsonAsync("/users", new CreateUserDTO("ada", "secret"));
+        HttpResponseMessage response = await _client.PostAsJsonAsync("/users", new CreateUserRequest("ada", "secret", UserRole.User));
 
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
         Assert.Equal("/users/1", response.Headers.Location?.AbsolutePath);
-        Assert.Equal(new UserDTO(1, "ada"), await response.Content.ReadFromJsonAsync<UserDTO>());
+        Assert.Equal(new UserResponse(1, "ada", UserRole.User), await response.Content.ReadFromJsonAsync<UserResponse>());
     }
 
     [Fact]
@@ -38,9 +40,9 @@ public class ApiTests : IClassFixture<ApiFactory>
         HttpResponseMessage response = await _client.GetAsync("/users?userNameContains=ad");
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        UserDTO[] users = await response.Content.ReadFromJsonAsync<UserDTO[]>()
+        UserResponse[] users = await response.Content.ReadFromJsonAsync<UserResponse[]>()
             ?? throw new InvalidOperationException("The users response was empty.");
-        Assert.Equal([new UserDTO(1, "Ada")], users);
+        Assert.Equal([new UserResponse(1, "Ada", UserRole.User)], users);
     }
 
     [Fact]
@@ -51,7 +53,7 @@ public class ApiTests : IClassFixture<ApiFactory>
         HttpResponseMessage response = await _client.GetAsync("/users/2");
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.Equal(new UserDTO(2, "Bob"), await response.Content.ReadFromJsonAsync<UserDTO>());
+        Assert.Equal(new UserResponse(2, "Bob", UserRole.User), await response.Content.ReadFromJsonAsync<UserResponse>());
     }
 
     [Fact]
@@ -63,7 +65,7 @@ public class ApiTests : IClassFixture<ApiFactory>
         HttpResponseMessage response = await _client.GetAsync("/posts?userId=2&titleContains=linq&userNameContains=ada");
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        PostDTO post = Assert.Single(await response.Content.ReadFromJsonAsync<PostDTO[]>()
+        PostResponse post = Assert.Single(await response.Content.ReadFromJsonAsync<PostResponse[]>()
             ?? throw new InvalidOperationException("The posts response was empty."));
         Assert.Equal("ada", post.UserName);
     }
@@ -76,12 +78,12 @@ public class ApiTests : IClassFixture<ApiFactory>
 
         HttpResponseMessage response = await _client.PostAsJsonAsync(
             "/posts",
-            new CreatePostDTO("A new post", "Post body", 1));
+            new CreatePostRequest("A new post", "Post body", 1));
 
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
         Assert.Equal("/posts/1", response.Headers.Location?.AbsolutePath);
 
-        PostDTO createdPost = await response.Content.ReadFromJsonAsync<PostDTO>()
+        PostResponse createdPost = await response.Content.ReadFromJsonAsync<PostResponse>()
             ?? throw new InvalidOperationException("The created post response was empty.");
         Assert.Equal(1, createdPost.Id);
         Assert.Equal("A new post", createdPost.Title);
@@ -98,7 +100,7 @@ public class ApiTests : IClassFixture<ApiFactory>
         HttpResponseMessage response = await _client.GetAsync("/comments?postId=3");
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        CommentDTO comment = Assert.Single(await response.Content.ReadFromJsonAsync<CommentDTO[]>()
+        CommentResponse comment = Assert.Single(await response.Content.ReadFromJsonAsync<CommentResponse[]>()
             ?? throw new InvalidOperationException("The comments response was empty."));
         Assert.Equal("ada", comment.UserName);
     }
@@ -112,12 +114,12 @@ public class ApiTests : IClassFixture<ApiFactory>
 
         HttpResponseMessage response = await _client.PostAsJsonAsync(
             "/comments",
-            new CreateCommentDTO("A new comment", 1, 3));
+            new CreateCommentRequest("A new comment", 1, 3));
 
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
         Assert.Equal("/comments/1", response.Headers.Location?.AbsolutePath);
 
-        CommentDTO createdComment = await response.Content.ReadFromJsonAsync<CommentDTO>()
+        CommentResponse createdComment = await response.Content.ReadFromJsonAsync<CommentResponse>()
             ?? throw new InvalidOperationException("The created comment response was empty.");
         Assert.Equal(1, createdComment.Id);
         Assert.Equal("A new comment", createdComment.Body);
@@ -140,7 +142,7 @@ public class ApiTests : IClassFixture<ApiFactory>
     {
         _factory.Users.Reset(new User { Id = 1, UserName = "ada", Password = "secret" });
 
-        HttpResponseMessage response = await _client.PostAsJsonAsync("/users", new CreateUserDTO("ada", "secret"));
+        HttpResponseMessage response = await _client.PostAsJsonAsync("/users", new CreateUserRequest("ada", "secret", UserRole.User));
 
         Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
     }

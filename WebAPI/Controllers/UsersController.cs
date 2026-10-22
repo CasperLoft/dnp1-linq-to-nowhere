@@ -16,26 +16,26 @@ public class UsersController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<IReadOnlyCollection<UserDTO>>> GetMany([FromQuery] string? userNameContains)
+    public async Task<ActionResult<IReadOnlyCollection<UserResponse>>> GetMany([FromQuery] string? userNameContains)
     {
         return Ok(await _userService.GetManyAsync(userNameContains));
     }
 
     [HttpGet("{id:int}")]
-    public async Task<ActionResult<UserDTO>> GetById(int id)
+    public async Task<ActionResult<UserResponse>> GetById(int id)
     {
         return Ok(await _userService.GetByIdAsync(id));
     }
 
     [HttpPost]
-    public async Task<ActionResult<UserDTO>> Create([FromBody] CreateUserDTO request)
+    public async Task<ActionResult<UserResponse>> Create([FromBody] CreateUserRequest request)
     {
-        UserDTO created = await _userService.CreateAsync(request);
+        UserResponse created = await _userService.CreateAsync(request);
         return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
     }
 
     [HttpPut("{id:int}")]
-    public async Task<ActionResult<UserDTO>> Update(int id, [FromBody] UpdateUserDTO request)
+    public async Task<ActionResult<UserResponse>> Update(int id, [FromBody] UpdateUserRequest request)
     {
         return Ok(await _userService.UpdateAsync(id, request));
     }

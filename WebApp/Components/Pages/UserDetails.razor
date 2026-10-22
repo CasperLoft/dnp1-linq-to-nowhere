@@ -47,7 +47,7 @@ else if (user is not null)
         else
         {
             <div class="row row-cols-1 row-cols-md-2 g-3">
-                @foreach (PostDTO post in posts)
+                @foreach (PostResponse post in posts)
                 {
                     <div class="col">
                         <a class="user-post-card-link" href="@($"posts/{post.Id}")">
@@ -82,7 +82,7 @@ else if (user is not null)
         else
         {
             <ol class="user-comment-thread">
-                @foreach (CommentDTO comment in comments.OrderByDescending(comment => comment.Id))
+                @foreach (CommentResponse comment in comments.OrderByDescending(comment => comment.Id))
                 {
                     <li>
                         <article class="user-comment-card">
@@ -100,9 +100,9 @@ else if (user is not null)
     [Parameter]
     public int Id { get; set; }
 
-    private UserDTO? user;
-    private IReadOnlyCollection<PostDTO> posts = [];
-    private IReadOnlyCollection<CommentDTO> comments = [];
+    private UserResponse? user;
+    private IReadOnlyCollection<PostResponse> posts = [];
+    private IReadOnlyCollection<CommentResponse> comments = [];
     private bool isUserLoading;
     private bool isPostsLoading;
     private bool isCommentsLoading;

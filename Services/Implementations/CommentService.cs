@@ -1,4 +1,5 @@
 using DTOs;
+using DTOs.Comments.Requests;
 using Entities;
 using RepositoryContracts;
 
@@ -20,7 +21,7 @@ public class CommentService : ICommentService
         _postRepository = postRepository;
     }
 
-    public async Task<CommentDTO> CreateAsync(CreateCommentDTO request)
+    public async Task<CommentResponse> CreateAsync(CreateCommentRequest request)
     {
         User author = await EnsureReferencesExistAsync(request.UserId, request.PostId);
 
@@ -34,13 +35,13 @@ public class CommentService : ICommentService
         return ToDto(created, author.UserName);
     }
 
-    public async Task<CommentDTO> GetByIdAsync(int id)
+    public async Task<CommentResponse> GetByIdAsync(int id)
     {
         Comment comment = await GetCommentAsync(id);
         return await ToDtoAsync(comment);
     }
 
-    public Task<IReadOnlyCollection<CommentDTO>> GetManyAsync(
+    public Task<IReadOnlyCollection<CommentResponse>> GetManyAsync(
         int? userId = null,
         int? postId = null,
         string? userNameContains = null)
@@ -70,13 +71,13 @@ public class CommentService : ICommentService
             comments = comments.Where(comment => matchingUserIds.Contains(comment.UserId));
         }
 
-        IReadOnlyCollection<CommentDTO> result = comments
+        IReadOnlyCollection<CommentResponse> result = comments
             .Select(comment => ToDto(comment, GetUserName(userNamesById, comment.UserId)))
             .ToArray();
         return Task.FromResult(result);
     }
 
-    public async Task<CommentDTO> UpdateAsync(int id, UpdateCommentDTO request)
+    public async Task<CommentResponse> UpdateAsync(int id, UpdateCommentRequest request)
     {
         Comment comment = await GetCommentAsync(id);
         User author = await EnsureReferencesExistAsync(comment.UserId, comment.PostId);
@@ -93,7 +94,7 @@ public class CommentService : ICommentService
         await _commentRepository.DeleteAsync(id);
     }
 
-    private async Task<CommentDTO> ToDtoAsync(Comment comment)
+    private async Task<CommentResponse> ToDtoAsync(Comment comment)
     {
         User author = await GetUserAsync(comment.UserId);
         return ToDto(comment, author.UserName);
@@ -138,6 +139,6 @@ public class CommentService : ICommentService
             ? userName
             : throw new ResourceNotFoundException($"User with Id {userId} was not found.");
 
-    private static CommentDTO ToDto(Comment comment, string userName) =>
+    private static CommentResponse ToDto(Comment comment, string userName) =>
         new(comment.Id, comment.Body, comment.UserId, comment.PostId, userName);
 }

@@ -42,7 +42,7 @@ else if (users.Count == 0)
 else
 {
     <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-3">
-        @foreach (UserDTO user in users)
+        @foreach (UserResponse user in users)
         {
             <div class="col">
                 <a class="user-card-link" href="@($"users/{user.Id}")">
@@ -59,7 +59,7 @@ else
 }
 
 @code {
-    private IReadOnlyCollection<UserDTO> users = [];
+    private IReadOnlyCollection<UserResponse> users = [];
     private string userNameContains = string.Empty;
     private bool isLoading = true;
     private string? errorMessage;

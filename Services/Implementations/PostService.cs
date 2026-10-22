@@ -20,7 +20,7 @@ public class PostService : IPostService
         _commentRepository = commentRepository;
     }
 
-    public async Task<PostDTO> CreateAsync(CreatePostDTO request)
+    public async Task<PostResponse> CreateAsync(CreatePostRequest request)
     {
         User author = await GetUserAsync(request.UserId);
 
@@ -34,13 +34,13 @@ public class PostService : IPostService
         return ToDto(created, author.UserName);
     }
 
-    public async Task<PostDTO> GetByIdAsync(int id)
+    public async Task<PostResponse> GetByIdAsync(int id)
     {
         Post post = await GetPostAsync(id);
         return await ToDtoAsync(post);
     }
 
-    public Task<IReadOnlyCollection<PostDTO>> GetManyAsync(
+    public Task<IReadOnlyCollection<PostResponse>> GetManyAsync(
         int? userId = null,
         string? titleContains = null,
         string? userNameContains = null)
@@ -70,13 +70,13 @@ public class PostService : IPostService
             posts = posts.Where(post => matchingUserIds.Contains(post.UserId));
         }
 
-        IReadOnlyCollection<PostDTO> result = posts
+        IReadOnlyCollection<PostResponse> result = posts
             .Select(post => ToDto(post, GetUserName(userNamesById, post.UserId)))
             .ToArray();
         return Task.FromResult(result);
     }
 
-    public async Task<PostDTO> UpdateAsync(int id, UpdatePostDTO request)
+    public async Task<PostResponse> UpdateAsync(int id, UpdatePostRequest request)
     {
         Post post = await GetPostAsync(id);
         User author = await GetUserAsync(post.UserId);
@@ -100,7 +100,7 @@ public class PostService : IPostService
         await _postRepository.DeleteAsync(id);
     }
 
-    private async Task<PostDTO> ToDtoAsync(Post post)
+    private async Task<PostResponse> ToDtoAsync(Post post)
     {
         User author = await GetUserAsync(post.UserId);
         return ToDto(post, author.UserName);
@@ -129,6 +129,6 @@ public class PostService : IPostService
             ? userName
             : throw new ResourceNotFoundException($"User with Id {userId} was not found.");
 
-    private static PostDTO ToDto(Post post, string userName) =>
+    private static PostResponse ToDto(Post post, string userName) =>
         new(post.Id, post.Title, post.Body, post.UserId, userName);
 }
