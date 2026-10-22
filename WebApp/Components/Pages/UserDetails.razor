@@ -1,5 +1,6 @@
 @page "/users/{Id:int}"
 @using DTOs
+@using Enums
 @using WebApp.Services
 @inject IUserService UserService
 @inject IPostService PostService
@@ -24,9 +25,12 @@ else if (userErrorMessage is not null)
 else if (user is not null)
 {
     <section class="user-profile-panel mb-5" aria-labelledby="user-profile-heading">
-        <p class="eyebrow">ADMIN // PROFILE</p>
-        <h1 id="user-profile-heading">@user.UserName</h1>
-        <p class="user-profile-copy mb-0">Authored activity is collected here for future moderation workflows.</p>
+        <p class="eyebrow">@user.Role.ToString().ToUpperInvariant() // PROFILE</p>
+        <div class="d-flex align-items-center gap-3">
+            <h1 id="user-profile-heading" class="mb-0">@user.UserName</h1>
+            <span class="badge rounded-pill @GetRoleBadgeClass(user.Role)">@user.Role</span>
+        </div>
+        <p class="user-profile-copy mb-0 mt-2">Authored activity is collected here for future moderation workflows.</p>
     </section>
 
     <section class="user-activity-section" aria-labelledby="authored-posts-heading">
@@ -193,4 +197,11 @@ else if (user is not null)
         const int maximumLength = 140;
         return body.Length <= maximumLength ? body : $"{body[..maximumLength]}…";
     }
+
+    private static string GetRoleBadgeClass(UserRole role) => role switch
+    {
+        UserRole.Admin => "bg-danger",
+        UserRole.Moderator => "bg-primary",
+        _ => "bg-secondary"
+    };
 }

@@ -1,1 +1,32 @@
-[{"Id":1,"UserName":"Alice","Password":"password1"},{"Id":2,"UserName":"Bob","Password":"password2"},{"Id":3,"UserName":"Charlie","Password":"password3"},{"Id":4,"UserName":"Test","Password":"test123"}]
+[
+  {
+    "Id": 1,
+    "UserName": "Alice",
+    "Password": "password1",
+    "Role": 2
+  },
+  {
+    "Id": 2,
+    "UserName": "Bob",
+    "Password": "password2",
+    "Role": 1
+  },
+  {
+    "Id": 3,
+    "UserName": "Charlie",
+    "Password": "password3",
+    "Role": 0
+  },
+  {
+    "Id": 4,
+    "UserName": "Test",
+    "Password": "test123",
+    "Role": 0
+  },
+  {
+    "Id": 5,
+    "UserName": "Casper",
+    "Password": "123456",
+    "Role": 0
+  }
+]
