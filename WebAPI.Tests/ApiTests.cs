@@ -78,6 +78,28 @@ public class ApiTests : IClassFixture<ApiFactory>
     }
 
     [Fact]
+    public async Task CreateComment_ReturnsCreatedDtoWithAuthorUserName()
+    {
+        _factory.Users.Reset(new User { Id = 1, UserName = "alice", Password = "secret" });
+        _factory.Posts.Reset(new Post { Id = 3, UserId = 1, Title = "Post", Body = "Body" });
+        _factory.Comments.Reset();
+
+        HttpResponseMessage response = await _client.PostAsJsonAsync(
+            "/comments",
+            new CreateCommentDTO("A new comment", 1, 3));
+
+        Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+        Assert.Equal("/comments/1", response.Headers.Location?.AbsolutePath);
+
+        CommentDTO createdComment = await response.Content.ReadFromJsonAsync<CommentDTO>()
+            ?? throw new InvalidOperationException("The created comment response was empty.");
+        Assert.Equal(1, createdComment.Id);
+        Assert.Equal("A new comment", createdComment.Body);
+        Assert.Equal(3, createdComment.PostId);
+        Assert.Equal("alice", createdComment.UserName);
+    }
+
+    [Fact]
     public async Task GetComment_MapsMissingResourceToNotFoundProblem()
     {
         _factory.Comments.Reset();

@@ -33,6 +33,29 @@ else if (post is not null)
     <section aria-labelledby="comments-heading">
         <h2 id="comments-heading">Comments</h2>
 
+        <EditForm class="comment-composer" Model="commentModel" OnValidSubmit="PostCommentAsync">
+            <DataAnnotationsValidator />
+            <ValidationSummary class="validation-summary" />
+
+            @if (commentSubmissionError is not null)
+            {
+                <div class="alert alert-danger" role="alert">@commentSubmissionError</div>
+            }
+
+            <label class="form-label" for="comment-body">Add a comment</label>
+            <InputTextArea id="comment-body"
+                           class="form-control comment-composer-input"
+                           @bind-Value="commentModel.Body"
+                           placeholder="Join the conversation" />
+            <ValidationMessage For="() => commentModel.Body" />
+
+            <div class="comment-composer-actions">
+                <button class="btn btn-primary" type="submit" disabled="@isSubmittingComment">
+                    @(isSubmittingComment ? "Posting…" : "Post comment")
+                </button>
+            </div>
+        </EditForm>
+
         @if (isCommentsLoading)
         {
             <p class="text-secondary" role="status">Loading comments…</p>
@@ -71,11 +94,14 @@ else if (post is not null)
 
     private PostDTO? post;
     private IReadOnlyCollection<CommentDTO> comments = [];
+    private readonly CreateCommentFormModel commentModel = new();
     private bool isPostLoading;
     private bool isCommentsLoading;
+    private bool isSubmittingComment;
     private bool postNotFound;
     private string? postErrorMessage;
     private string? commentsErrorMessage;
+    private string? commentSubmissionError;
 
     protected override async Task OnParametersSetAsync()
     {
@@ -91,6 +117,7 @@ else if (post is not null)
         postNotFound = false;
         postErrorMessage = null;
         commentsErrorMessage = null;
+        commentSubmissionError = null;
 
         try
         {
@@ -130,6 +157,35 @@ else if (post is not null)
         finally
         {
             isCommentsLoading = false;
+        }
+    }
+
+    private async Task PostCommentAsync()
+    {
+        if (isSubmittingComment)
+        {
+            return;
+        }
+
+        isSubmittingComment = true;
+        commentSubmissionError = null;
+
+        try
+        {
+            CommentDTO createdComment = await CommentService.AddCommentAsync(
+                new CreateCommentDTO(commentModel.Body, 1, Id));
+
+            comments = [createdComment, .. comments];
+            commentModel.Body = string.Empty;
+            commentsErrorMessage = null;
+        }
+        catch (HttpRequestException)
+        {
+            commentSubmissionError = "Your comment could not be posted. Make sure the Web API is running and try again.";
+        }
+        finally
+        {
+            isSubmittingComment = false;
         }
     }
 }
