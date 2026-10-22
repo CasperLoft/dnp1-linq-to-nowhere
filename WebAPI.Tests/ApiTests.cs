@@ -43,6 +43,27 @@ public class ApiTests : IClassFixture<ApiFactory>
     }
 
     [Fact]
+    public async Task CreatePost_ReturnsCreatedDtoWithAuthorUserName()
+    {
+        _factory.Users.Reset(new User { Id = 1, UserName = "alice", Password = "secret" });
+        _factory.Posts.Reset();
+
+        HttpResponseMessage response = await _client.PostAsJsonAsync(
+            "/posts",
+            new CreatePostDTO("A new post", "Post body", 1));
+
+        Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+        Assert.Equal("/posts/1", response.Headers.Location?.AbsolutePath);
+
+        PostDTO createdPost = await response.Content.ReadFromJsonAsync<PostDTO>()
+            ?? throw new InvalidOperationException("The created post response was empty.");
+        Assert.Equal(1, createdPost.Id);
+        Assert.Equal("A new post", createdPost.Title);
+        Assert.Equal("Post body", createdPost.Body);
+        Assert.Equal("alice", createdPost.UserName);
+    }
+
+    [Fact]
     public async Task GetComments_ReturnsUserName()
     {
         _factory.Users.Reset(new User { Id = 2, UserName = "ada", Password = "secret" });

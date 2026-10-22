@@ -1,0 +1,79 @@
+@page "/posts/new"
+@using DTOs
+@using WebApp.Services
+@inject IPostService PostService
+@inject NavigationManager Navigation
+
+<PageTitle>New post</PageTitle>
+
+<a class="back-link" href="posts">← Back to posts</a>
+
+<section class="composer-panel" aria-labelledby="create-post-heading">
+    <p class="eyebrow">POSTS // NEW</p>
+    <h1 id="create-post-heading">Create a post</h1>
+    <p class="composer-copy">Share a thought with the network.</p>
+
+    @if (errorMessage is not null)
+    {
+        <div class="alert alert-danger" role="alert">@errorMessage</div>
+    }
+
+    <EditForm Model="model" OnValidSubmit="PublishAsync">
+        <DataAnnotationsValidator />
+        <ValidationSummary class="validation-summary" />
+
+        <div class="mb-4">
+            <label class="form-label" for="post-title">Title</label>
+            <InputText id="post-title" class="form-control" @bind-Value="model.Title" />
+            <ValidationMessage For="() => model.Title" />
+        </div>
+
+        <div>
+            <label class="form-label" for="post-body">Post</label>
+            <InputTextArea id="post-body" class="form-control composer-body-input" @bind-Value="model.Body" />
+            <ValidationMessage For="() => model.Body" />
+        </div>
+
+        <div class="composer-actions">
+            <a class="btn btn-outline-secondary" href="posts">Cancel</a>
+            <button class="btn btn-primary" type="submit" disabled="@isSubmitting">
+                @(isSubmitting ? "Publishing…" : "Publish post")
+            </button>
+        </div>
+    </EditForm>
+</section>
+
+@code {
+    private const int TemporaryAuthorId = 1;
+
+    private readonly CreatePostFormModel model = new();
+    private bool isSubmitting;
+    private string? errorMessage;
+
+    private async Task PublishAsync()
+    {
+        if (isSubmitting)
+        {
+            return;
+        }
+
+        isSubmitting = true;
+        errorMessage = null;
+
+        try
+        {
+            PostDTO createdPost = await PostService.AddPostAsync(
+                new CreatePostDTO(model.Title, model.Body, TemporaryAuthorId));
+
+            Navigation.NavigateTo($"posts/{createdPost.Id}");
+        }
+        catch (HttpRequestException)
+        {
+            errorMessage = "Your post could not be published. Make sure the Web API is running and try again.";
+        }
+        finally
+        {
+            isSubmitting = false;
+        }
+    }
+}

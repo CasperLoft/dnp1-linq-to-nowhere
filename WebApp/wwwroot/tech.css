@@ -46,3 +46,11 @@ body {
 .content-byline { margin-bottom: 0.55rem; }
 .content-author { color: var(--text); font-size: 0.9rem; font-weight: 750; }
 .content-body { color: var(--text); font-size: 1.05rem; line-height: 1.65; white-space: pre-wrap; }
+
+/* Reusable, permission-ready action controls for content containers. */
+.content-actions { position: absolute; top: 1rem; right: 1rem; display: flex; gap: 0.3rem; }
+.content-action { display: grid; width: 2rem; height: 2rem; padding: 0; place-items: center; color: var(--muted); background: rgba(7, 11, 24, 0.5); border: 1px solid var(--line); border-radius: 0.35rem; }
+.content-action svg { width: 0.9rem; height: 0.9rem; fill: currentColor; }
+.content-action:hover { color: var(--cyan); border-color: var(--cyan); }
+.content-action-delete:hover { color: #ff9aaa; border-color: #ff7187; }
+.content-action:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }

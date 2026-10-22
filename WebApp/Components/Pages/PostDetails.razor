@@ -23,6 +23,7 @@ else if (postErrorMessage is not null)
 else if (post is not null)
 {
     <article class="post-detail-panel mb-5">
+        <ContentActionButtons ItemLabel="post"/>
         <p class="eyebrow">POST // @post.Id</p>
         <h1>@post.Title</h1>
         <p class="post-body">@post.Body</p>
@@ -51,6 +52,7 @@ else if (post is not null)
                 {
                     <li class="comment-thread-item">
                         <article class="comment-card">
+                            <ContentActionButtons ItemLabel="comment"/>
                             <div class="content-byline">
                                 <span class="content-author">@comment.UserName</span>
                             </div>

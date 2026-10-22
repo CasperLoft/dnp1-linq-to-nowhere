@@ -1,0 +1,19 @@
+<div class="content-actions" role="group" aria-label="Actions for @ItemLabel">
+    <button class="content-action" type="button" aria-label="Edit @ItemLabel" title="Edit @ItemLabel">
+        <svg viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+            <path d="M12.146 0.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10L3 14l.146-2.854 10-10ZM11.5 1.207 4.084 8.623l2.293 2.293 7.416-7.416L11.5 1.207Zm-8.29 8.77L3 13l3.023-.21-2.814-2.814Z"/>
+            <path d="M1 13.5A1.5 1.5 0 0 1 2.5 12H7a.5.5 0 0 1 0 1H2.5a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5H12a.5.5 0 0 0 .5-.5V10a.5.5 0 0 1 1 0v4.5a1.5 1.5 0 0 1-1.5 1.5h-9A1.5 1.5 0 0 1 1 14.5v-1Z"/>
+        </svg>
+    </button>
+    <button class="content-action content-action-delete" type="button" aria-label="Delete @ItemLabel" title="Delete @ItemLabel">
+        <svg viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+            <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5Zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5Zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6Z"/>
+            <path d="M14.5 3a1 1 0 0 1-1 1H13l-.867 10.407A2 2 0 0 1 10.14 16H5.86a2 2 0 0 1-1.993-1.593L3 4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6V.5a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 .5.5V1h3.5a1 1 0 0 1 1 1v1ZM3 2v1h11V2H3Zm1.003 2 .862 10.337A1 1 0 0 0 5.86 15h4.28a1 1 0 0 0 .996-.663L12.997 4H4.003Z"/>
+        </svg>
+    </button>
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public string ItemLabel { get; set; } = string.Empty;
+}

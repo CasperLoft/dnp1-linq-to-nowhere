@@ -8,7 +8,9 @@
 }
 
 .post-detail-panel {
+    position: relative;
     padding: clamp(1.5rem, 4vw, 3rem);
+    padding-right: max(6rem, clamp(1.5rem, 4vw, 3rem));
     border: 1px solid var(--line);
     background: linear-gradient(135deg, rgba(18, 29, 54, 0.92), rgba(7, 11, 24, 0.72));
 }
@@ -33,7 +35,9 @@
 }
 
 .comment-card {
+    position: relative;
     padding: 1.15rem 1.25rem;
+    padding-right: 6rem;
     border: 1px solid var(--line);
     border-left: 3px solid var(--violet);
     background: rgba(13, 20, 40, 0.65);
