@@ -19,10 +19,17 @@ public class CommentServiceTests
             new Comment { Id = 3, UserId = 5, PostId = 3, Body = "Wrong user" }
         }.AsQueryable());
 
-        var service = new CommentService(comments.Object, Mock.Of<IUserRepository>(), Mock.Of<IPostRepository>());
+        var users = new Mock<IUserRepository>();
+        users.Setup(repository => repository.GetManyAsync()).Returns(new[]
+        {
+            new User { Id = 2, UserName = "ada", Password = "secret" },
+            new User { Id = 5, UserName = "grace", Password = "secret" }
+        }.AsQueryable());
+
+        var service = new CommentService(comments.Object, users.Object, Mock.Of<IPostRepository>());
 
         IReadOnlyCollection<CommentDTO> result = await service.GetManyAsync(userId: 2, postId: 3);
 
-        Assert.Collection(result, comment => Assert.Equal(new CommentDTO(1, "Keep", 2, 3), comment));
+        Assert.Collection(result, comment => Assert.Equal(new CommentDTO(1, "Keep", 2, 3, "ada"), comment));
     }
 }

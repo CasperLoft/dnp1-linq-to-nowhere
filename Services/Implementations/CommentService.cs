@@ -22,7 +22,7 @@ public class CommentService : ICommentService
 
     public async Task<CommentDTO> CreateAsync(CreateCommentDTO request)
     {
-        await EnsureReferencesExistAsync(request.UserId, request.PostId);
+        User author = await EnsureReferencesExistAsync(request.UserId, request.PostId);
 
         Comment created = await _commentRepository.AddAsync(new Comment
         {
@@ -31,13 +31,13 @@ public class CommentService : ICommentService
             PostId = request.PostId
         });
 
-        return ToDto(created);
+        return ToDto(created, author.UserName);
     }
 
     public async Task<CommentDTO> GetByIdAsync(int id)
     {
         Comment comment = await GetCommentAsync(id);
-        return ToDto(comment);
+        return await ToDtoAsync(comment);
     }
 
     public Task<IReadOnlyCollection<CommentDTO>> GetManyAsync(
@@ -57,29 +57,34 @@ public class CommentService : ICommentService
             comments = comments.Where(comment => comment.PostId == postId.Value);
         }
 
+        IReadOnlyDictionary<int, string> userNamesById = _userRepository.GetManyAsync()
+            .ToDictionary(user => user.Id, user => user.UserName);
+
         if (!string.IsNullOrWhiteSpace(userNameContains))
         {
-            HashSet<int> matchingUserIds = _userRepository.GetManyAsync()
-                .Where(user => user.UserName.Contains(userNameContains, StringComparison.OrdinalIgnoreCase))
-                .Select(user => user.Id)
+            HashSet<int> matchingUserIds = userNamesById
+                .Where(user => user.Value.Contains(userNameContains, StringComparison.OrdinalIgnoreCase))
+                .Select(user => user.Key)
                 .ToHashSet();
 
             comments = comments.Where(comment => matchingUserIds.Contains(comment.UserId));
         }
 
-        IReadOnlyCollection<CommentDTO> result = comments.Select(ToDto).ToArray();
+        IReadOnlyCollection<CommentDTO> result = comments
+            .Select(comment => ToDto(comment, GetUserName(userNamesById, comment.UserId)))
+            .ToArray();
         return Task.FromResult(result);
     }
 
     public async Task<CommentDTO> UpdateAsync(int id, UpdateCommentDTO request)
     {
         Comment comment = await GetCommentAsync(id);
-        await EnsureReferencesExistAsync(comment.UserId, comment.PostId);
+        User author = await EnsureReferencesExistAsync(comment.UserId, comment.PostId);
 
         comment.Body = request.Body;
         await _commentRepository.UpdateAsync(comment);
 
-        return ToDto(comment);
+        return ToDto(comment, author.UserName);
     }
 
     public async Task DeleteAsync(int id)
@@ -88,16 +93,15 @@ public class CommentService : ICommentService
         await _commentRepository.DeleteAsync(id);
     }
 
-    private async Task EnsureReferencesExistAsync(int userId, int postId)
+    private async Task<CommentDTO> ToDtoAsync(Comment comment)
     {
-        try
-        {
-            await _userRepository.GetByIdAsync(userId);
-        }
-        catch (InvalidOperationException exception)
-        {
-            throw new ResourceNotFoundException($"User with Id {userId} was not found.", exception);
-        }
+        User author = await GetUserAsync(comment.UserId);
+        return ToDto(comment, author.UserName);
+    }
+
+    private async Task<User> EnsureReferencesExistAsync(int userId, int postId)
+    {
+        User author = await GetUserAsync(userId);
 
         try
         {
@@ -107,6 +111,14 @@ public class CommentService : ICommentService
         {
             throw new ResourceNotFoundException($"Post with Id {postId} was not found.", exception);
         }
+
+        return author;
+    }
+
+    private async Task<User> GetUserAsync(int userId)
+    {
+        try { return await _userRepository.GetByIdAsync(userId); }
+        catch (InvalidOperationException exception) { throw new ResourceNotFoundException($"User with Id {userId} was not found.", exception); }
     }
 
     private async Task<Comment> GetCommentAsync(int id)
@@ -121,6 +133,11 @@ public class CommentService : ICommentService
         }
     }
 
-    private static CommentDTO ToDto(Comment comment) =>
-        new(comment.Id, comment.Body, comment.UserId, comment.PostId);
+    private static string GetUserName(IReadOnlyDictionary<int, string> userNamesById, int userId) =>
+        userNamesById.TryGetValue(userId, out string? userName)
+            ? userName
+            : throw new ResourceNotFoundException($"User with Id {userId} was not found.");
+
+    private static CommentDTO ToDto(Comment comment, string userName) =>
+        new(comment.Id, comment.Body, comment.UserId, comment.PostId, userName);
 }

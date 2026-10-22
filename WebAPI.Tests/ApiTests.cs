@@ -37,7 +37,23 @@ public class ApiTests : IClassFixture<ApiFactory>
         HttpResponseMessage response = await _client.GetAsync("/posts?userId=2&titleContains=linq&userNameContains=ada");
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.Contains("LINQ", await response.Content.ReadAsStringAsync());
+        PostDTO post = Assert.Single(await response.Content.ReadFromJsonAsync<PostDTO[]>()
+            ?? throw new InvalidOperationException("The posts response was empty."));
+        Assert.Equal("ada", post.UserName);
+    }
+
+    [Fact]
+    public async Task GetComments_ReturnsUserName()
+    {
+        _factory.Users.Reset(new User { Id = 2, UserName = "ada", Password = "secret" });
+        _factory.Comments.Reset(new Comment { Id = 4, UserId = 2, PostId = 3, Body = "Nice post" });
+
+        HttpResponseMessage response = await _client.GetAsync("/comments?postId=3");
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        CommentDTO comment = Assert.Single(await response.Content.ReadFromJsonAsync<CommentDTO[]>()
+            ?? throw new InvalidOperationException("The comments response was empty."));
+        Assert.Equal("ada", comment.UserName);
     }
 
     [Fact]

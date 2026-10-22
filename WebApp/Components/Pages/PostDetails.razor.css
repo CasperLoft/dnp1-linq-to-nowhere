@@ -20,6 +20,21 @@
     white-space: pre-wrap;
 }
 
+.comment-thread {
+    display: grid;
+    max-width: 780px;
+    margin: 1.5rem 0 0;
+    padding: 0;
+    list-style: none;
+}
+
+.comment-thread-item + .comment-thread-item {
+    margin-top: 0.85rem;
+}
+
 .comment-card {
-    border-color: var(--line);
+    padding: 1.15rem 1.25rem;
+    border: 1px solid var(--line);
+    border-left: 3px solid var(--violet);
+    background: rgba(13, 20, 40, 0.65);
 }

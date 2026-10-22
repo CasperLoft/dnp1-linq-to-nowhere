@@ -34,11 +34,18 @@ public class PostServiceTests
             new Post { Id = 3, UserId = 3, Title = "LINQ Tips", Body = "Body" }
         }.AsQueryable());
 
-        var service = new PostService(posts.Object, Mock.Of<IUserRepository>(), Mock.Of<ICommentRepository>());
+        var users = new Mock<IUserRepository>();
+        users.Setup(repository => repository.GetManyAsync()).Returns(new[]
+        {
+            new User { Id = 2, UserName = "ada", Password = "secret" },
+            new User { Id = 3, UserName = "grace", Password = "secret" }
+        }.AsQueryable());
+
+        var service = new PostService(posts.Object, users.Object, Mock.Of<ICommentRepository>());
 
         IReadOnlyCollection<PostDTO> result = await service.GetManyAsync(2, "linq");
 
-        Assert.Collection(result, post => Assert.Equal(1, post.Id));
+        Assert.Collection(result, post => Assert.Equal(new PostDTO(1, "Learning LINQ", "Body", 2, "ada"), post));
     }
 
     [Fact]

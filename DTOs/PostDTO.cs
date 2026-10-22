@@ -4,5 +4,6 @@ public record PostDTO(
     int Id,
     string Title,
     string Body,
-    int UserId
+    int UserId,
+    string UserName
 );

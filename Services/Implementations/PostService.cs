@@ -22,7 +22,7 @@ public class PostService : IPostService
 
     public async Task<PostDTO> CreateAsync(CreatePostDTO request)
     {
-        await EnsureUserExistsAsync(request.UserId);
+        User author = await GetUserAsync(request.UserId);
 
         Post created = await _postRepository.AddAsync(new Post
         {
@@ -31,13 +31,13 @@ public class PostService : IPostService
             UserId = request.UserId
         });
 
-        return ToDto(created);
+        return ToDto(created, author.UserName);
     }
 
     public async Task<PostDTO> GetByIdAsync(int id)
     {
         Post post = await GetPostAsync(id);
-        return ToDto(post);
+        return await ToDtoAsync(post);
     }
 
     public Task<IReadOnlyCollection<PostDTO>> GetManyAsync(
@@ -57,30 +57,35 @@ public class PostService : IPostService
             posts = posts.Where(post => post.Title.Contains(titleContains, StringComparison.OrdinalIgnoreCase));
         }
 
+        IReadOnlyDictionary<int, string> userNamesById = _userRepository.GetManyAsync()
+            .ToDictionary(user => user.Id, user => user.UserName);
+
         if (!string.IsNullOrWhiteSpace(userNameContains))
         {
-            HashSet<int> matchingUserIds = _userRepository.GetManyAsync()
-                .Where(user => user.UserName.Contains(userNameContains, StringComparison.OrdinalIgnoreCase))
-                .Select(user => user.Id)
+            HashSet<int> matchingUserIds = userNamesById
+                .Where(user => user.Value.Contains(userNameContains, StringComparison.OrdinalIgnoreCase))
+                .Select(user => user.Key)
                 .ToHashSet();
 
             posts = posts.Where(post => matchingUserIds.Contains(post.UserId));
         }
 
-        IReadOnlyCollection<PostDTO> result = posts.Select(ToDto).ToArray();
+        IReadOnlyCollection<PostDTO> result = posts
+            .Select(post => ToDto(post, GetUserName(userNamesById, post.UserId)))
+            .ToArray();
         return Task.FromResult(result);
     }
 
     public async Task<PostDTO> UpdateAsync(int id, UpdatePostDTO request)
     {
         Post post = await GetPostAsync(id);
-        await EnsureUserExistsAsync(post.UserId);
+        User author = await GetUserAsync(post.UserId);
 
         post.Title = request.Title;
         post.Body = request.Body;
         await _postRepository.UpdateAsync(post);
 
-        return ToDto(post);
+        return ToDto(post, author.UserName);
     }
 
     public async Task DeleteAsync(int id)
@@ -95,16 +100,16 @@ public class PostService : IPostService
         await _postRepository.DeleteAsync(id);
     }
 
-    private async Task EnsureUserExistsAsync(int userId)
+    private async Task<PostDTO> ToDtoAsync(Post post)
     {
-        try
-        {
-            await _userRepository.GetByIdAsync(userId);
-        }
-        catch (InvalidOperationException exception)
-        {
-            throw new ResourceNotFoundException($"User with Id {userId} was not found.", exception);
-        }
+        User author = await GetUserAsync(post.UserId);
+        return ToDto(post, author.UserName);
+    }
+
+    private async Task<User> GetUserAsync(int userId)
+    {
+        try { return await _userRepository.GetByIdAsync(userId); }
+        catch (InvalidOperationException exception) { throw new ResourceNotFoundException($"User with Id {userId} was not found.", exception); }
     }
 
     private async Task<Post> GetPostAsync(int id)
@@ -119,5 +124,11 @@ public class PostService : IPostService
         }
     }
 
-    private static PostDTO ToDto(Post post) => new(post.Id, post.Title, post.Body, post.UserId);
+    private static string GetUserName(IReadOnlyDictionary<int, string> userNamesById, int userId) =>
+        userNamesById.TryGetValue(userId, out string? userName)
+            ? userName
+            : throw new ResourceNotFoundException($"User with Id {userId} was not found.");
+
+    private static PostDTO ToDto(Post post, string userName) =>
+        new(post.Id, post.Title, post.Body, post.UserId, userName);
 }

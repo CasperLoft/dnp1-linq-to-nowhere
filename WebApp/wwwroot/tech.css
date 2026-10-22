@@ -41,3 +41,8 @@ body {
 .hero-panel, .login-panel { max-width: 760px; padding: clamp(2rem, 6vw, 5rem); border: 1px solid var(--line); background: linear-gradient(135deg, rgba(18, 29, 54, 0.92), rgba(7, 11, 24, 0.72)); box-shadow: 16px 16px 0 rgba(82, 225, 255, 0.06); }
 .hero-panel h1, .login-panel h1 { font-size: clamp(2.5rem, 7vw, 5.4rem); letter-spacing: -0.06em; }
 .hero-copy, .login-panel p:not(.eyebrow) { max-width: 35rem; color: var(--muted); font-size: 1.1rem; }
+
+/* Reusable author-and-message hierarchy for feeds, comments, and activity items. */
+.content-byline { margin-bottom: 0.55rem; }
+.content-author { color: var(--text); font-size: 0.9rem; font-weight: 750; }
+.content-body { color: var(--text); font-size: 1.05rem; line-height: 1.65; white-space: pre-wrap; }

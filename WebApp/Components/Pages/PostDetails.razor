@@ -26,7 +26,7 @@ else if (post is not null)
         <p class="eyebrow">POST // @post.Id</p>
         <h1>@post.Title</h1>
         <p class="post-body">@post.Body</p>
-        <p class="text-secondary mb-0">Author user ID: @post.UserId</p>
+        <p class="text-secondary mb-0">By @post.UserName</p>
     </article>
 
     <section aria-labelledby="comments-heading">
@@ -46,21 +46,19 @@ else if (post is not null)
         }
         else
         {
-            <div class="row row-cols-1 row-cols-lg-2 g-3">
-                @foreach (CommentDTO comment in comments)
+            <ol class="comment-thread">
+                @foreach (CommentDTO comment in comments.OrderByDescending(comment => comment.Id))
                 {
-                    <div class="col">
-                        <article class="card h-100 comment-card">
-                            <div class="card-body">
-                                <p class="card-text mb-0">@comment.Body</p>
+                    <li class="comment-thread-item">
+                        <article class="comment-card">
+                            <div class="content-byline">
+                                <span class="content-author">@comment.UserName</span>
                             </div>
-                            <div class="card-footer bg-transparent text-secondary small">
-                                User ID: @comment.UserId
-                            </div>
+                            <p class="content-body mb-0">@comment.Body</p>
                         </article>
-                    </div>
+                    </li>
                 }
-            </div>
+            </ol>
         }
     </section>
 }
