@@ -29,9 +29,9 @@
 </div>
 
 @code {
-    private void Logout()
+    private async Task Logout()
     {
-        ((SimpleAuthProvider)AuthProvider).Logout();
+        await ((SimpleAuthProvider)AuthProvider).Logout();
         Navigation.NavigateTo("/");
     }
 }
