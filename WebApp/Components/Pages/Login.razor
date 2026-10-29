@@ -1,9 +1,63 @@
 @page "/login"
+@using WebApp.Auth
+@inject AuthenticationStateProvider AuthProvider
+@inject NavigationManager navMgr
 
 <PageTitle>Login</PageTitle>
 
 <section class="login-panel">
     <p class="eyebrow">AUTH // 00</p>
-    <h1>Login is coming online.</h1>
-    <p>Authentication will live here when the API gains its login flow.</p>
+    <AuthorizeView>
+        <NotAuthorized>
+            <h1>Log in</h1>
+            <p class="login-copy">Sign in to your account.</p>
+
+            @if (!string.IsNullOrEmpty(errorLabel))
+            {
+                <div class="alert alert-danger" role="alert">@errorLabel</div>
+            }
+
+            <form @onsubmit="LoginAsync" @onsubmit:preventDefault>
+                <div class="mb-4">
+                    <label class="form-label" for="login-username">Username</label>
+                    <input id="login-username" class="form-control" type="text" autocomplete="username" @bind="userName" />
+                </div>
+                <div>
+                    <label class="form-label" for="login-password">Password</label>
+                    <input id="login-password" class="form-control" type="password" autocomplete="current-password" @bind="password" />
+                </div>
+                <div class="login-actions">
+                    <a class="btn btn-outline-secondary" href="/">Cancel</a>
+                    <button class="btn btn-primary" type="submit">Log in</button>
+                </div>
+            </form>
+        </NotAuthorized>
+        <Authorized>
+            <h1>Welcome back</h1>
+            <p>You are logged in as @context.User.Identity?.Name.</p>
+            <a class="btn btn-primary" href="/">Go home</a>
+        </Authorized>
+    </AuthorizeView>
 </section>
+
+@code
+{
+    private string userName;
+    private string password;
+    private string errorLabel;
+
+    private async Task LoginAsync()
+    {
+        errorLabel = "";
+        try
+        {
+            await ((SimpleAuthProvider)AuthProvider).Login(userName, password);
+            navMgr.NavigateTo("/");
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            errorLabel = $"Error: {e.Message}";
+        }
+    }
+}

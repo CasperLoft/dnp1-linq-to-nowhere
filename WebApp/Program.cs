@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.Components.Authorization;
+using WebApp.Auth;
 using WebApp.Components;
 using WebApp.Services;
 
@@ -16,6 +18,7 @@ builder.Services.AddScoped(_ => new HttpClient
 builder.Services.AddScoped<IUserService, HttpUserService>();
 builder.Services.AddScoped<IPostService, HttpPostService>();
 builder.Services.AddScoped<ICommentService, HttpCommentService>();
+builder.Services.AddScoped<AuthenticationStateProvider, SimpleAuthProvider>();
 
 var app = builder.Build();
 
