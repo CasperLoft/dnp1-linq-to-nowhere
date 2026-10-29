@@ -23,7 +23,7 @@ main {
     align-items: center;
 }
 
-    .top-row ::deep a, .top-row ::deep .btn-link {
+    .top-row ::deep a, .logout-button {
         color: var(--text);
         border: 1px solid var(--line);
         border-radius: 999px;
@@ -33,7 +33,13 @@ main {
         text-decoration: none;
     }
 
-    .top-row ::deep a:hover, .top-row ::deep .btn-link:hover {
+    .logout-button {
+        background: transparent;
+        font: inherit;
+        cursor: pointer;
+    }
+
+    .top-row ::deep a:hover, .logout-button:hover {
         color: var(--cyan);
         border-color: var(--cyan);
         text-decoration: none;
@@ -49,12 +55,13 @@ main {
         justify-content: space-between;
     }
 
-    .top-row ::deep a, .top-row ::deep .btn-link {
+    .top-row ::deep a, .logout-button {
         margin-left: 0;
     }
 }
 
 .system-status { margin-right: auto; color: #75edbd; font-size: 0.7rem; font-weight: 800; letter-spacing: 0.12em; }
+.account-name { color: var(--muted); margin-left: 1rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 @media (min-width: 641px) {
     .page {
