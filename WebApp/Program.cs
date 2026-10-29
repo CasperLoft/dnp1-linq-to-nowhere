@@ -9,7 +9,8 @@ builder.Services.AddRazorComponents()
 
 builder.Services.AddScoped(_ => new HttpClient
     {
-        BaseAddress = new Uri("https://localhost:7295/")
+        BaseAddress = new Uri(builder.Configuration["ApiBaseAddress"]
+            ?? throw new InvalidOperationException("ApiBaseAddress is not configured."))
     }
 );
 builder.Services.AddScoped<IUserService, HttpUserService>();
