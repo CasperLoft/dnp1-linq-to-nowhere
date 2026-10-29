@@ -14,9 +14,18 @@ public sealed class HttpCommentService(HttpClient client) : ICommentService
                ?? throw new HttpRequestException("The comments API returned an empty response.");
     }
 
-    public Task UpdateCommentAsync(UpdateCommentRequest request)
+    public async Task<CommentResponse> UpdateCommentAsync(int id, UpdateCommentRequest request)
     {
-        throw new NotImplementedException();
+        using HttpResponseMessage response = await client.PutAsJsonAsync($"comments/{id}", request);
+        response.EnsureSuccessStatusCode();
+        return await response.Content.ReadFromJsonAsync<CommentResponse>()
+               ?? throw new HttpRequestException("The comments API returned an empty response.");
+    }
+
+    public async Task DeleteCommentAsync(int id)
+    {
+        using HttpResponseMessage response = await client.DeleteAsync($"comments/{id}");
+        response.EnsureSuccessStatusCode();
     }
 
     public async Task<IReadOnlyCollection<CommentResponse>> GetManyAsync(int? postId = null, int? userId = null)

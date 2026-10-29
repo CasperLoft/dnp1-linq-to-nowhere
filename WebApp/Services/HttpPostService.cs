@@ -14,9 +14,18 @@ public sealed class HttpPostService(HttpClient client) : IPostService
                ?? throw new HttpRequestException("The posts API returned an empty response.");
     }
 
-    public Task UpdatePostAsync(UpdatePostRequest request)
+    public async Task<PostResponse> UpdatePostAsync(int id, UpdatePostRequest request)
     {
-        throw new NotSupportedException("Updating a post requires its ID, which is not part of UpdatePostDTO.");
+        using HttpResponseMessage response = await client.PutAsJsonAsync($"posts/{id}", request);
+        response.EnsureSuccessStatusCode();
+        return await response.Content.ReadFromJsonAsync<PostResponse>()
+               ?? throw new HttpRequestException("The posts API returned an empty response.");
+    }
+
+    public async Task DeletePostAsync(int id)
+    {
+        using HttpResponseMessage response = await client.DeleteAsync($"posts/{id}");
+        response.EnsureSuccessStatusCode();
     }
 
     public async Task<PostResponse> GetByIdAsync(int id)

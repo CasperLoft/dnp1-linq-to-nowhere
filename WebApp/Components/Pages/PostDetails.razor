@@ -2,6 +2,10 @@
 @using DTOs
 @using DTOs.Comments.Requests
 @using WebApp.Services
+@using System.Security.Claims
+@inject AuthenticationStateProvider AuthProvider
+@inject IJSRuntime JS
+@inject NavigationManager Navigation
 @inject IPostService PostService
 @inject ICommentService CommentService
 
@@ -23,11 +27,32 @@ else if (postErrorMessage is not null)
 }
 else if (post is not null)
 {
+    <AuthorizeView Context="auth">
+    <Authorized>
     <article class="post-detail-panel mb-5">
-        <ContentActionButtons ItemLabel="post"/>
+        @if (CanManage(auth.User, post.UserId) && !editingPost)
+        {
+            <ContentActionButtons ItemLabel="post" OnEdit="BeginPostEdit" OnDelete="DeletePostAsync" />
+        }
+        @if (actionError is not null) { <div class="alert alert-danger" role="alert">@actionError</div> }
         <p class="eyebrow">POST // @post.Id</p>
-        <h1>@post.Title</h1>
-        <p class="post-body">@post.Body</p>
+        @if (editingPost)
+        {
+            <EditForm Model="postEditModel" OnValidSubmit="SavePostAsync">
+                <DataAnnotationsValidator /><ValidationSummary />
+                <label class="form-label" for="edit-post-title">Title</label>
+                <InputText id="edit-post-title" class="form-control mb-3" @bind-Value="postEditModel.Title" />
+                <label class="form-label" for="edit-post-body">Post</label>
+                <InputTextArea id="edit-post-body" class="form-control" @bind-Value="postEditModel.Body" />
+                <div class="mt-3"><button class="btn btn-primary" type="submit" disabled="@isSaving">Save</button>
+                <button class="btn btn-outline-secondary" type="button" @onclick="CancelPostEdit" disabled="@isSaving">Cancel</button></div>
+            </EditForm>
+        }
+        else
+        {
+            <h1>@post.Title</h1>
+            <p class="post-body">@post.Body</p>
+        }
         <p class="text-secondary mb-0">By @post.UserName</p>
     </article>
 
@@ -76,17 +101,46 @@ else if (post is not null)
                 {
                     <li class="comment-thread-item">
                         <article class="comment-card">
-                            <ContentActionButtons ItemLabel="comment"/>
+                            @if (CanManage(auth.User, comment.UserId) && editingCommentId != comment.Id)
+                            {
+                                <ContentActionButtons ItemLabel="comment" OnEdit="@(() => BeginCommentEdit(comment))" OnDelete="@(() => DeleteCommentAsync(comment))" />
+                            }
                             <div class="content-byline">
                                 <span class="content-author">@comment.UserName</span>
                             </div>
-                            <p class="content-body mb-0">@comment.Body</p>
+                            @if (editingCommentId == comment.Id)
+                            {
+                                <EditForm Model="commentEditModel" OnValidSubmit="SaveCommentAsync">
+                                    <DataAnnotationsValidator /><ValidationSummary />
+                                    <label class="form-label" for="@($"edit-comment-{comment.Id}")">Comment</label>
+                                    <InputTextArea id="@($"edit-comment-{comment.Id}")" class="form-control" @bind-Value="commentEditModel.Body" />
+                                    <div class="mt-3"><button class="btn btn-primary" type="submit" disabled="@isSaving">Save</button>
+                                    <button class="btn btn-outline-secondary" type="button" @onclick="CancelCommentEdit" disabled="@isSaving">Cancel</button></div>
+                                </EditForm>
+                            }
+                            else { <p class="content-body mb-0">@comment.Body</p> }
                         </article>
                     </li>
                 }
             </ol>
         }
     </section>
+    </Authorized>
+    <NotAuthorized>
+        <article class="post-detail-panel mb-5">
+            <p class="eyebrow">POST // @post.Id</p><h1>@post.Title</h1>
+            <p class="post-body">@post.Body</p><p class="text-secondary mb-0">By @post.UserName</p>
+        </article>
+        <section aria-labelledby="guest-comments-heading">
+            <h2 id="guest-comments-heading">Comments</h2>
+            <p>Please <a href="login">log in</a> to add a comment.</p>
+            @if (isCommentsLoading) { <p role="status">Loading comments…</p> }
+            else if (commentsErrorMessage is not null) { <div class="alert alert-danger" role="alert">@commentsErrorMessage</div> }
+            else if (comments.Count == 0) { <p>No comments yet.</p> }
+            else { <ol class="comment-thread">@foreach (var comment in comments.OrderByDescending(c => c.Id)) { <li class="comment-thread-item"><article class="comment-card"><div class="content-byline"><span class="content-author">@comment.UserName</span></div><p class="content-body mb-0">@comment.Body</p></article></li> }</ol> }
+        </section>
+    </NotAuthorized>
+    </AuthorizeView>
 }
 
 @code {
@@ -103,6 +157,72 @@ else if (post is not null)
     private string? postErrorMessage;
     private string? commentsErrorMessage;
     private string? commentSubmissionError;
+    private string? actionError;
+    private bool editingPost;
+    private int? editingCommentId;
+    private bool isSaving;
+    private readonly CreatePostFormModel postEditModel = new();
+    private readonly CreateCommentFormModel commentEditModel = new();
+
+    private static bool CanManage(ClaimsPrincipal user, int ownerId) =>
+        user.Identity?.IsAuthenticated == true &&
+        (user.IsInRole("Admin") || user.IsInRole("Moderator") ||
+         (int.TryParse(user.FindFirst(ClaimTypes.NameIdentifier)?.Value, out int id) && id == ownerId));
+
+    private async Task<bool> CanManageAsync(int ownerId) => CanManage((await AuthProvider.GetAuthenticationStateAsync()).User, ownerId);
+
+    private void BeginPostEdit()
+    {
+        if (post is null) return;
+        actionError = null;
+        postEditModel.Title = post.Title;
+        postEditModel.Body = post.Body;
+        editingPost = true;
+    }
+
+    private void CancelPostEdit() { editingPost = false; actionError = null; }
+    private void BeginCommentEdit(CommentResponse comment)
+    {
+        actionError = null;
+        editingCommentId = comment.Id;
+        commentEditModel.Body = comment.Body;
+    }
+    private void CancelCommentEdit() { editingCommentId = null; actionError = null; }
+
+    private async Task SavePostAsync()
+    {
+        if (isSaving || post is null || !await CanManageAsync(post.UserId)) return;
+        isSaving = true; actionError = null;
+        try { post = await PostService.UpdatePostAsync(post.Id, new UpdatePostRequest(postEditModel.Title, postEditModel.Body)); editingPost = false; }
+        catch (HttpRequestException) { actionError = "The post could not be updated. Please try again."; }
+        finally { isSaving = false; }
+    }
+    private async Task DeletePostAsync()
+    {
+        if (isSaving || post is null || !await CanManageAsync(post.UserId) || !await JS.InvokeAsync<bool>("confirm", "Delete this post?")) return;
+        isSaving = true; actionError = null;
+        try { await PostService.DeletePostAsync(post.Id); Navigation.NavigateTo("posts"); }
+        catch (HttpRequestException e) when (e.StatusCode == System.Net.HttpStatusCode.Conflict) { actionError = "This post cannot be deleted while it has comments."; }
+        catch (HttpRequestException) { actionError = "The post could not be deleted. Please try again."; }
+        finally { isSaving = false; }
+    }
+    private async Task SaveCommentAsync()
+    {
+        var comment = comments.FirstOrDefault(c => c.Id == editingCommentId);
+        if (isSaving || comment is null || !await CanManageAsync(comment.UserId)) return;
+        isSaving = true; actionError = null;
+        try { var updated = await CommentService.UpdateCommentAsync(comment.Id, new UpdateCommentRequest(commentEditModel.Body)); comments = comments.Select(c => c.Id == updated.Id ? updated : c).ToArray(); editingCommentId = null; }
+        catch (HttpRequestException) { actionError = "The comment could not be updated. Please try again."; }
+        finally { isSaving = false; }
+    }
+    private async Task DeleteCommentAsync(CommentResponse comment)
+    {
+        if (isSaving || !await CanManageAsync(comment.UserId) || !await JS.InvokeAsync<bool>("confirm", "Delete this comment?")) return;
+        isSaving = true; actionError = null;
+        try { await CommentService.DeleteCommentAsync(comment.Id); comments = comments.Where(c => c.Id != comment.Id).ToArray(); }
+        catch (HttpRequestException) { actionError = "The comment could not be deleted. Please try again."; }
+        finally { isSaving = false; }
+    }
 
     protected override async Task OnParametersSetAsync()
     {
@@ -173,8 +293,14 @@ else if (post is not null)
 
         try
         {
+            var user = (await AuthProvider.GetAuthenticationStateAsync()).User;
+            if (user.Identity?.IsAuthenticated != true || !int.TryParse(user.FindFirst(ClaimTypes.NameIdentifier)?.Value, out int userId))
+            {
+                commentSubmissionError = "Please log in to add a comment.";
+                return;
+            }
             CommentResponse createdComment = await CommentService.AddCommentAsync(
-                new CreateCommentRequest(commentModel.Body, 1, Id));
+                new CreateCommentRequest(commentModel.Body, userId, Id));
 
             comments = [createdComment, .. comments];
             commentModel.Body = string.Empty;

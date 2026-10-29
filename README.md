@@ -41,4 +41,6 @@ dotnet test
 
 ## Assignment status
 
-The API has a login endpoint at `POST /auth/login`. The Blazor login page and authentication state are still being implemented; the development login flow is not production-ready.
+The API has a login endpoint at `POST /auth/login`, and the Blazor app maintains a development login state. The login flow is not production-ready.
+
+Post and comment permissions are enforced only in the Blazor interface for this assignment. Browser session data can be modified and API endpoints can be called directly without these checks; do not use this authentication flow for production.

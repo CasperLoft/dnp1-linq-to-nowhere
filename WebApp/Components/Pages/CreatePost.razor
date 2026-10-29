@@ -1,8 +1,10 @@
 @page "/posts/new"
 @using DTOs
+@using System.Security.Claims
 @using WebApp.Services
 @inject IPostService PostService
 @inject NavigationManager Navigation
+@inject AuthenticationStateProvider AuthProvider
 
 <PageTitle>New post</PageTitle>
 
@@ -18,6 +20,8 @@
         <div class="alert alert-danger" role="alert">@errorMessage</div>
     }
 
+    <AuthorizeView Context="authState">
+    <Authorized>
     <EditForm Model="model" OnValidSubmit="PublishAsync">
         <DataAnnotationsValidator />
         <ValidationSummary class="validation-summary" />
@@ -41,11 +45,12 @@
             </button>
         </div>
     </EditForm>
+    </Authorized>
+    <NotAuthorized><p>Please <a href="login">log in</a> to create a post.</p></NotAuthorized>
+    </AuthorizeView>
 </section>
 
 @code {
-    private const int TemporaryAuthorId = 1;
-
     private readonly CreatePostFormModel model = new();
     private bool isSubmitting;
     private string? errorMessage;
@@ -62,8 +67,14 @@
 
         try
         {
+            var user = (await AuthProvider.GetAuthenticationStateAsync()).User;
+            if (user.Identity?.IsAuthenticated != true || !int.TryParse(user.FindFirst(ClaimTypes.NameIdentifier)?.Value, out int userId))
+            {
+                errorMessage = "Please log in to create a post.";
+                return;
+            }
             PostResponse createdPost = await PostService.AddPostAsync(
-                new CreatePostRequest(model.Title, model.Body, TemporaryAuthorId));
+                new CreatePostRequest(model.Title, model.Body, userId));
 
             Navigation.NavigateTo($"posts/{createdPost.Id}");
         }

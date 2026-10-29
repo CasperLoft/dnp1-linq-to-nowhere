@@ -5,7 +5,8 @@ namespace WebApp.Services;
 public interface IPostService
 {
     Task<PostResponse> AddPostAsync(CreatePostRequest request);
-    Task UpdatePostAsync(UpdatePostRequest request);
+    Task<PostResponse> UpdatePostAsync(int id, UpdatePostRequest request);
+    Task DeletePostAsync(int id);
 
     Task<PostResponse> GetByIdAsync(int id);
 
