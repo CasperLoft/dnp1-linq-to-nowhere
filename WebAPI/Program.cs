@@ -37,6 +37,13 @@ if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
+    app.Lifetime.ApplicationStarted.Register(() =>
+    {
+        foreach (string address in app.Urls)
+        {
+            app.Logger.LogInformation("Swagger: {SwaggerUrl}", $"{address}/swagger");
+        }
+    });
 }
 
 if (!app.Environment.IsDevelopment())
