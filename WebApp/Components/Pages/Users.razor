@@ -1,7 +1,9 @@
 @page "/users"
 @using DTOs
+@using Microsoft.AspNetCore.Authorization
 @using WebApp.Services
 @inject IUserService UserService
+@attribute [Authorize(Roles = "Admin")]
 
 <PageTitle>Users</PageTitle>
 

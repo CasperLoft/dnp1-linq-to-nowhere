@@ -41,7 +41,8 @@ public class SimpleAuthProvider : AuthenticationStateProvider
         List<Claim> claims = new List<Claim>()
         {
             new Claim(ClaimTypes.Name, userResponse.UserName),
-            new Claim("Role", userResponse.Role.ToString()),
+            new Claim(ClaimTypes.NameIdentifier, userResponse.Id.ToString()),
+            new Claim(ClaimTypes.Role, userResponse.Role.ToString()),
         };
 
         ClaimsIdentity identity = new ClaimsIdentity(claims, "apiauth");
@@ -73,7 +74,8 @@ public class SimpleAuthProvider : AuthenticationStateProvider
         List<Claim> claims = new List<Claim>()
         {
             new Claim(ClaimTypes.Name, userResponse.UserName),
-            new Claim("Role", userResponse.Role.ToString())
+            new Claim(ClaimTypes.NameIdentifier, userResponse.Id.ToString()),
+            new Claim(ClaimTypes.Role, userResponse.Role.ToString())
         };
 
         ClaimsIdentity identity = new ClaimsIdentity(claims, "apiauth");
