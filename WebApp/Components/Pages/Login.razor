@@ -51,7 +51,7 @@
         errorLabel = "";
         try
         {
-            await ((SimpleAuthProvider)AuthProvider).Login(userName, password);
+            await ((SimpleAuthProvider)AuthProvider).LoginAsync(userName, password);
             navMgr.NavigateTo("/");
         }
         catch (Exception e)
