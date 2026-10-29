@@ -1,6 +1,9 @@
 bin/
 obj/
 /packages/
+
+# Local runtime data, recreated by the development seeder
+/data/
 riderModule.iml
 /_ReSharper.Caches/
 
