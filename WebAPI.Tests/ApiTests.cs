@@ -15,6 +15,9 @@ public class ApiTests : IClassFixture<ApiFactory>
     public ApiTests(ApiFactory factory)
     {
         _factory = factory;
+        _factory.Users.Reset();
+        _factory.Posts.Reset();
+        _factory.Comments.Reset();
         _client = factory.CreateClient();
     }
 
@@ -59,8 +62,13 @@ public class ApiTests : IClassFixture<ApiFactory>
     [Fact]
     public async Task GetPosts_PassesAllFiltersToService()
     {
-        _factory.Users.Reset(new User { Id = 2, UserName = "ada", PasswordHash = "secret" });
-        _factory.Posts.Reset(new Post { Id = 3, UserId = 2, Title = "LINQ", Body = "Body" });
+        _factory.Users.Reset(
+            new User { Id = 2, UserName = "ada", PasswordHash = "secret" },
+            new User { Id = 5, UserName = "bob", PasswordHash = "secret" });
+        _factory.Posts.Reset(
+            new Post { Id = 3, UserId = 2, Title = "LINQ", Body = "Body" },
+            new Post { Id = 4, UserId = 2, Title = "Other", Body = "Body" },
+            new Post { Id = 5, UserId = 5, Title = "LINQ", Body = "Body" });
 
         HttpResponseMessage response = await _client.GetAsync("/posts?userId=2&titleContains=linq&userNameContains=ada");
 
@@ -94,10 +102,15 @@ public class ApiTests : IClassFixture<ApiFactory>
     [Fact]
     public async Task GetComments_ReturnsUserName()
     {
-        _factory.Users.Reset(new User { Id = 2, UserName = "ada", PasswordHash = "secret" });
-        _factory.Comments.Reset(new Comment { Id = 4, UserId = 2, PostId = 3, Body = "Nice post" });
+        _factory.Users.Reset(
+            new User { Id = 2, UserName = "ada", PasswordHash = "secret" },
+            new User { Id = 5, UserName = "bob", PasswordHash = "secret" });
+        _factory.Comments.Reset(
+            new Comment { Id = 4, UserId = 2, PostId = 3, Body = "Nice post" },
+            new Comment { Id = 5, UserId = 2, PostId = 8, Body = "Other post" },
+            new Comment { Id = 6, UserId = 5, PostId = 3, Body = "Other author" });
 
-        HttpResponseMessage response = await _client.GetAsync("/comments?postId=3");
+        HttpResponseMessage response = await _client.GetAsync("/comments?userId=2&postId=3&userNameContains=ad");
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         CommentResponse comment = Assert.Single(await response.Content.ReadFromJsonAsync<CommentResponse[]>()
