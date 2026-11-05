@@ -7,6 +7,9 @@ public class Post : IEntity
     public string Body { get; set; }
     public int UserId { get; set; }
     
+    public User? User { get; set; }
+    public ICollection<Comment> Comments { get; set; } = new List<Comment>();
+    
     private Post() { }
 
     public Post(string title, string body, int userId)

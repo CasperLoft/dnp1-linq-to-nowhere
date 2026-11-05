@@ -8,6 +8,8 @@ public class User : IEntity
     public string UserName { get; set; }
     public string PasswordHash { get; set; }
     public UserRole Role { get; set; }
+    public ICollection<Post> Posts { get; set; } = new List<Post>();
+    public ICollection<Comment> Comments { get; set; } = new List<Comment>();
     
     private User() { }
 
