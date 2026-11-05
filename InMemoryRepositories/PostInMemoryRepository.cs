@@ -7,12 +7,12 @@ public class PostInMemoryRepository
     : InMemoryRepository<Post>, IPostRepository
 {
     public PostInMemoryRepository()
-    : base(
-    [
-        new Post { Id = 1, Title = "First Post", Body = "This is the first post.", UserId = 1 },
-        new Post { Id = 2, Title = "Second Post", Body = "This is the second post.", UserId = 2 },
-        new Post { Id = 3, Title = "Third Post", Body = "This is the third post.", UserId = 3 }
-    ])
+        : base(
+        [
+            new Post("First Post", "This is the first post.", 1) { Id = 1 },
+            new Post("Second Post", "This is the second post.", 2) { Id = 2 },
+            new Post("Third Post", "This is the third post.", 3) { Id = 3 }
+        ])
     {
     }
 }

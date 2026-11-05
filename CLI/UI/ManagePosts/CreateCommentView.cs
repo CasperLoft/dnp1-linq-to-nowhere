@@ -11,8 +11,8 @@ public class CreateCommentView
     public CreateCommentView(ICommentRepository commentRepository,
         IUserRepository userRepository)
     {
-        this._commentRepository = commentRepository;
-        this._userRepository = userRepository;
+        _commentRepository = commentRepository;
+        _userRepository = userRepository;
     }
 
     public async Task StartAsync(int postId)
@@ -38,12 +38,8 @@ public class CreateCommentView
 
             string commentBody = CliApp.ReadRequiredInput("Write your comment: ");
 
-            var newComment = new Comment
-            {
-                PostId = postId,
-                UserId = userId,
-                Body = commentBody
-            };
+            // Using the parameterized constructor matching Comment(string body, int postId, int userId)
+            var newComment = new Comment(commentBody, postId, userId);
 
             await _commentRepository.AddAsync(newComment);
             

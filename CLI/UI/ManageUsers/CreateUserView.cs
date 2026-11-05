@@ -10,7 +10,7 @@ public class CreateUserView
 
     public CreateUserView(IUserRepository userRepository)
     {
-        this._userRepository = userRepository;
+        _userRepository = userRepository;
     }
 
     public async Task StartAsync()
@@ -18,12 +18,12 @@ public class CreateUserView
         string username = CliApp.ReadRequiredInput("Enter username: ");
         string password = CliApp.ReadRequiredInput("Enter password: ");
 
-        var newUser = new User
-        {
-            UserName = username
-        };
+        // 1. Hash the password before instantiating the user
+        var passwordHasher = new PasswordHasher<User>();
+        string passwordHash = passwordHasher.HashPassword(null!, password);
 
-        newUser.PasswordHash = new PasswordHasher<User>().HashPassword(newUser, password);
+        // 2. Instantiate User using the parameterized constructor
+        var newUser = new User(username, passwordHash);
 
         User createdUser = await _userRepository.AddAsync(newUser);
 

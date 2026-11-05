@@ -8,11 +8,10 @@ public class CreatePostView
     private readonly IPostRepository _postRepository;
     private readonly IUserRepository _userRepository;
 
-
     public CreatePostView(IPostRepository postRepository, IUserRepository userRepository)
     {
-        this._postRepository = postRepository;
-        this._userRepository = userRepository;
+        _postRepository = postRepository;
+        _userRepository = userRepository;
     }
 
     public async Task StartAsync()
@@ -45,12 +44,8 @@ public class CreatePostView
         string postTitle = CliApp.ReadRequiredInput("Enter post title: ");
         string postBody = CliApp.ReadRequiredInput("Enter post body: ");
 
-        var newPost = new Post
-        {
-            UserId = userId,
-            Title = postTitle,
-            Body = postBody
-        };
+        // Using the parameterized constructor Post(string title, string body, int userId)
+        var newPost = new Post(postTitle, postBody, userId);
 
         Post createdPost = await _postRepository.AddAsync(newPost);
 

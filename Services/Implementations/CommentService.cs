@@ -25,12 +25,12 @@ public class CommentService : ICommentService
     {
         User author = await EnsureReferencesExistAsync(request.UserId, request.PostId);
 
-        Comment created = await _commentRepository.AddAsync(new Comment
-        {
-            Body = request.Body,
-            UserId = request.UserId,
-            PostId = request.PostId
-        });
+        // Updated to use the parameterized constructor
+        Comment created = await _commentRepository.AddAsync(new Comment(
+            request.Body,
+            request.PostId,
+            request.UserId
+        ));
 
         return ToDto(created, author.UserName);
     }

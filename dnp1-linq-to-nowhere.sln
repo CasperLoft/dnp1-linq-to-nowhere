@@ -34,6 +34,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DevelopmentData", "Developm
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DevelopmentData.Tests", "DevelopmentData.Tests\DevelopmentData.Tests.csproj", "{95DBBCE7-69C4-46A1-9CE6-52E337D1FE98}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EfcRepositories", "EfcRepositories\EfcRepositories.csproj", "{BDB278B0-4267-4D19-852A-BDB9ED1A64E0}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -54,6 +56,7 @@ Global
 		{68DDAED3-3C1F-4611-9C13-0372829A13C1} = {CAEA811A-05E7-405A-8688-4E8F566626B4}
 		{A7DF85B8-F51C-4DD2-9031-260E2CFAB8A9} = {307D6DE3-3D37-4701-96FD-933180161C21}
 		{95DBBCE7-69C4-46A1-9CE6-52E337D1FE98} = {307D6DE3-3D37-4701-96FD-933180161C21}
+		{BDB278B0-4267-4D19-852A-BDB9ED1A64E0} = {307D6DE3-3D37-4701-96FD-933180161C21}
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{D9556B03-8AA8-42C7-9197-54415B078F2C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -112,5 +115,9 @@ Global
 		{95DBBCE7-69C4-46A1-9CE6-52E337D1FE98}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{95DBBCE7-69C4-46A1-9CE6-52E337D1FE98}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{95DBBCE7-69C4-46A1-9CE6-52E337D1FE98}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BDB278B0-4267-4D19-852A-BDB9ED1A64E0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BDB278B0-4267-4D19-852A-BDB9ED1A64E0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BDB278B0-4267-4D19-852A-BDB9ED1A64E0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BDB278B0-4267-4D19-852A-BDB9ED1A64E0}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

@@ -14,16 +14,16 @@ public class CommentServiceTests
         var comments = new Mock<ICommentRepository>();
         comments.Setup(repository => repository.GetManyAsync()).Returns(new[]
         {
-            new Comment { Id = 1, UserId = 2, PostId = 3, Body = "Keep" },
-            new Comment { Id = 2, UserId = 2, PostId = 4, Body = "Wrong post" },
-            new Comment { Id = 3, UserId = 5, PostId = 3, Body = "Wrong user" }
+            new Comment("Keep", 3, 2) { Id = 1 },
+            new Comment("Wrong post", 4, 2) { Id = 2 },
+            new Comment("Wrong user", 3, 5) { Id = 3 }
         }.AsQueryable());
 
         var users = new Mock<IUserRepository>();
         users.Setup(repository => repository.GetManyAsync()).Returns(new[]
         {
-            new User { Id = 2, UserName = "ada", PasswordHash = "secret" },
-            new User { Id = 5, UserName = "grace", PasswordHash = "secret" }
+            new User("ada", "secret") { Id = 2 },
+            new User("grace", "secret") { Id = 5 }
         }.AsQueryable());
 
         var service = new CommentService(comments.Object, users.Object, Mock.Of<IPostRepository>());

@@ -29,13 +29,11 @@ public class UserService : IUserService
     {
         EnsureUserNameIsAvailable(request.UserName);
 
-        var user = new User
-        {
-            UserName = request.UserName,
-            Role = request.Role
-        };
+        // 1. Hash the incoming plaintext password
+        string passwordHash = _passwordHasher.HashPassword(null!, request.Password);
 
-        user.PasswordHash = _passwordHasher.HashPassword(user, request.Password);
+        // 2. Instantiate User using the parameterized constructor
+        var user = new User(request.UserName, passwordHash, request.Role);
 
         User created = await _userRepository.AddAsync(user);
 

@@ -7,21 +7,20 @@ public class CommentInMemoryRepository
     : InMemoryRepository<Comment>, ICommentRepository
 {
     public CommentInMemoryRepository()
-    : base(
-    [
-        new Comment { Id = 1, Body = "This is the first comment.", PostId = 1, UserId = 1 },
-        new Comment { Id = 2, Body = "This is the second comment.", PostId = 1, UserId = 2 },
-        new Comment { Id = 3, Body = "This is the third comment.", PostId = 1, UserId = 3 },
+        : base(
+        [
+            new Comment("This is the first comment.", 1, 1) { Id = 1 },
+            new Comment("This is the second comment.", 1, 2) { Id = 2 },
+            new Comment("This is the third comment.", 1, 3) { Id = 3 },
 
-        new Comment { Id = 4, Body = "This is the first comment.", PostId = 2, UserId = 1 },
-        new Comment { Id = 5, Body = "This is the second comment.", PostId = 2, UserId = 2 },
-        new Comment { Id = 6, Body = "This is the third comment.", PostId = 2, UserId = 3 },
+            new Comment("This is the first comment.", 2, 1) { Id = 4 },
+            new Comment("This is the second comment.", 2, 2) { Id = 5 },
+            new Comment("This is the third comment.", 2, 3) { Id = 6 },
 
-        new Comment { Id = 7, Body = "This is the first comment.", PostId = 3, UserId = 1 },
-        new Comment { Id = 8, Body = "This is the second comment.", PostId = 3, UserId = 2 },
-        new Comment { Id = 9, Body = "This is the third comment.", PostId = 3, UserId = 3 },
-
-    ])
+            new Comment("This is the first comment.", 3, 1) { Id = 7 },
+            new Comment("This is the second comment.", 3, 2) { Id = 8 },
+            new Comment("This is the third comment.", 3, 3) { Id = 9 },
+        ])
     {
     }
 }

@@ -23,37 +23,36 @@ public sealed class DevelopmentDataSeeder(
         User bob = await CreateUserAsync("Bob", UserRole.Moderator);
         User charlie = await CreateUserAsync("Charlie", UserRole.User);
 
-        Post firstPost = await postRepository.AddAsync(new Post
-        {
-            Title = "First Post",
-            Body = "This is the first post.",
-            UserId = alice.Id
-        });
+        Post firstPost = await postRepository.AddAsync(new Post(
+            "First Post",
+            "This is the first post.", 
+            alice.Id
+        ));
         Post secondPost = await postRepository.AddAsync(new Post
-        {
-            Title = "Second Post",
-            Body = "This is the second post.",
-            UserId = bob.Id
-        });
+        (
+            "Second Post",
+            "This is the second post.",
+            bob.Id
+        ));
         Post thirdPost = await postRepository.AddAsync(new Post
-        {
-            Title = "Third Post",
-            Body = "This is the third post.",
-            UserId = charlie.Id
-        });
+        (
+            "Third Post",
+            "This is the third post.",
+            charlie.Id
+        ));
 
         foreach (Post post in new[] { firstPost, secondPost, thirdPost })
         {
-            await commentRepository.AddAsync(new Comment { Body = "This is the first comment.", PostId = post.Id, UserId = alice.Id });
-            await commentRepository.AddAsync(new Comment { Body = "This is the second comment.", PostId = post.Id, UserId = bob.Id });
-            await commentRepository.AddAsync(new Comment { Body = "This is the third comment.", PostId = post.Id, UserId = charlie.Id });
+            await commentRepository.AddAsync(new Comment ( "This is the first comment.", post.Id, alice.Id ));
+            await commentRepository.AddAsync(new Comment ( "This is the second comment.", post.Id, bob.Id ));
+            await commentRepository.AddAsync(new Comment ( "This is the third comment.", post.Id, charlie.Id ));
         }
     }
 
     private async Task<User> CreateUserAsync(string userName, UserRole role)
     {
-        var user = new User { UserName = userName, Role = role };
-        user.PasswordHash = passwordHasher.HashPassword(user, DevelopmentPassword);
+        string passwordHash = passwordHasher.HashPassword(null!, DevelopmentPassword);
+        var user = new User ( userName, passwordHash, role);
 
         return await userRepository.AddAsync(user);
     }

@@ -29,16 +29,16 @@ public class PostServiceTests
         var posts = new Mock<IPostRepository>();
         posts.Setup(repository => repository.GetManyAsync()).Returns(new[]
         {
-            new Post { Id = 1, UserId = 2, Title = "Learning LINQ", Body = "Body" },
-            new Post { Id = 2, UserId = 2, Title = "Other", Body = "Body" },
-            new Post { Id = 3, UserId = 3, Title = "LINQ Tips", Body = "Body" }
+            new Post("Learning LINQ", "Body", 2) { Id = 1 },
+            new Post("Other", "Body", 2) { Id = 2 },
+            new Post("LINQ Tips", "Body", 3) { Id = 3 }
         }.AsQueryable());
 
         var users = new Mock<IUserRepository>();
         users.Setup(repository => repository.GetManyAsync()).Returns(new[]
         {
-            new User { Id = 2, UserName = "ada", PasswordHash = "secret" },
-            new User { Id = 3, UserName = "grace", PasswordHash = "secret" }
+            new User("ada", "secret") { Id = 2 },
+            new User("grace", "secret") { Id = 3 }
         }.AsQueryable());
 
         var service = new PostService(posts.Object, users.Object, Mock.Of<ICommentRepository>());
@@ -53,12 +53,12 @@ public class PostServiceTests
     {
         var posts = new Mock<IPostRepository>();
         posts.Setup(repository => repository.GetByIdAsync(1))
-            .ReturnsAsync(new Post { Id = 1, UserId = 1, Title = "Title", Body = "Body" });
+            .ReturnsAsync(new Post("Title", "Body", 1) { Id = 1 });
 
         var comments = new Mock<ICommentRepository>();
         comments.Setup(repository => repository.GetManyAsync()).Returns(new[]
         {
-            new Comment { Id = 3, PostId = 1, UserId = 1, Body = "Comment" }
+            new Comment("Comment", 1, 1) { Id = 3 }
         }.AsQueryable());
 
         var service = new PostService(posts.Object, Mock.Of<IUserRepository>(), comments.Object);

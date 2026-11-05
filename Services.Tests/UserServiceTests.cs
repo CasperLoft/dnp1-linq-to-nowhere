@@ -40,7 +40,7 @@ public class UserServiceTests
         var users = new Mock<IUserRepository>();
         users.Setup(repository => repository.GetManyAsync()).Returns(new[]
         {
-            new User { Id = 1, UserName = "Ada", PasswordHash = "secret" }
+            new User("Ada", "secret") { Id = 1 }
         }.AsQueryable());
 
         var service = new UserService(new PasswordHasher<User>(), users.Object, Mock.Of<IPostRepository>(), Mock.Of<ICommentRepository>());
@@ -54,12 +54,13 @@ public class UserServiceTests
     public async Task DeleteAsync_RejectsUserWithPosts()
     {
         var users = new Mock<IUserRepository>();
-        users.Setup(repository => repository.GetByIdAsync(1)).ReturnsAsync(new User { Id = 1, UserName = "ada", PasswordHash = "secret" });
+        users.Setup(repository => repository.GetByIdAsync(1))
+            .ReturnsAsync(new User("ada", "secret") { Id = 1 });
 
         var posts = new Mock<IPostRepository>();
         posts.Setup(repository => repository.GetManyAsync()).Returns(new[]
         {
-            new Post { Id = 8, UserId = 1, Title = "Title", Body = "Body" }
+            new Post("Title", "Body", 1) { Id = 8 }
         }.AsQueryable());
 
         var service = new UserService(new PasswordHasher<User>(), users.Object, posts.Object, Mock.Of<ICommentRepository>());

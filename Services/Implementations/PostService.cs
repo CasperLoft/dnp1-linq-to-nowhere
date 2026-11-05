@@ -24,12 +24,12 @@ public class PostService : IPostService
     {
         User author = await GetUserAsync(request.UserId);
 
-        Post created = await _postRepository.AddAsync(new Post
-        {
-            Title = request.Title,
-            Body = request.Body,
-            UserId = request.UserId
-        });
+        // Updated to use the parameterized constructor
+        Post created = await _postRepository.AddAsync(new Post(
+            request.Title,
+            request.Body,
+            request.UserId
+        ));
 
         return ToDto(created, author.UserName);
     }

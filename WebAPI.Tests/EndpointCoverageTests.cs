@@ -126,14 +126,16 @@ public class EndpointCoverageTests : IClassFixture<ApiFactory>
     {
         Assert.Equal(HttpStatusCode.NotFound, (await _client.PostAsJsonAsync("/posts", new CreatePostRequest("Title", "Body", 99))).StatusCode);
         Assert.Equal(HttpStatusCode.NotFound, (await _client.PostAsJsonAsync("/comments", new CreateCommentRequest("Body", 99, 3))).StatusCode);
-        _factory.Users.Reset(new User { Id = 1, UserName = "alice", PasswordHash = "unused" });
+        _factory.Users.Reset(new User("alice", "unused") { Id = 1 });
         Assert.Equal(HttpStatusCode.NotFound, (await _client.PostAsJsonAsync("/comments", new CreateCommentRequest("Body", 1, 99))).StatusCode);
     }
 
     [Fact]
     public async Task UpdateUser_DuplicateName_ReturnsConflictWithoutChangingUser()
     {
-        _factory.Users.Reset(new User { Id = 1, UserName = "alice", PasswordHash = "unused" }, new User { Id = 2, UserName = "bob", PasswordHash = "unused" });
+        _factory.Users.Reset(
+            new User("alice", "unused") { Id = 1 },
+            new User("bob", "unused") { Id = 2 });
         var response = await _client.PutAsJsonAsync("/users/2", new UpdateUserRequest("ALICE", UserRole.User));
         await AssertProblem(response, HttpStatusCode.Conflict, "Request conflicts with existing data", "/users/2");
         Assert.Equal(new UserResponse(2, "bob", UserRole.User), await _client.GetFromJsonAsync<UserResponse>("/users/2"));
@@ -165,8 +167,12 @@ public class EndpointCoverageTests : IClassFixture<ApiFactory>
     [InlineData("/posts?userNameContains=ali", 3)]
     public async Task PostFilters_ExcludeNonmatchingRecords(string path, int expectedId)
     {
-        _factory.Users.Reset(new User { Id = 1, UserName = "alice" }, new User { Id = 2, UserName = "bob" });
-        _factory.Posts.Reset(new Post { Id = 3, UserId = 1, Title = "LINQ", Body = "Body" }, new Post { Id = 4, UserId = 2, Title = "Other", Body = "Body" });
+        _factory.Users.Reset(
+            new User("alice", "unused") { Id = 1 },
+            new User("bob", "unused") { Id = 2 });
+        _factory.Posts.Reset(
+            new Post("LINQ", "Body", 1) { Id = 3 },
+            new Post("Other", "Body", 2) { Id = 4 });
         var result = await _client.GetFromJsonAsync<PostResponse[]>(path);
         Assert.Equal(expectedId, Assert.Single(result!).Id);
     }
@@ -177,17 +183,21 @@ public class EndpointCoverageTests : IClassFixture<ApiFactory>
     [InlineData("/comments?userNameContains=ali")]
     public async Task CommentFilters_ExcludeNonmatchingRecords(string path)
     {
-        _factory.Users.Reset(new User { Id = 1, UserName = "alice" }, new User { Id = 2, UserName = "bob" });
-        _factory.Comments.Reset(new Comment { Id = 4, UserId = 1, PostId = 3, Body = "One" }, new Comment { Id = 5, UserId = 2, PostId = 6, Body = "Two" });
+        _factory.Users.Reset(
+            new User("alice", "unused") { Id = 1 },
+            new User("bob", "unused") { Id = 2 });
+        _factory.Comments.Reset(
+            new Comment("One", 3, 1) { Id = 4 },
+            new Comment("Two", 6, 2) { Id = 5 });
         var result = await _client.GetFromJsonAsync<CommentResponse[]>(path);
         Assert.Equal(4, Assert.Single(result!).Id);
     }
 
     private void SeedGraph()
     {
-        _factory.Users.Reset(new User { Id = 1, UserName = "alice", PasswordHash = "unused" });
-        _factory.Posts.Reset(new Post { Id = 3, UserId = 1, Title = "Title", Body = "Body" });
-        _factory.Comments.Reset(new Comment { Id = 4, UserId = 1, PostId = 3, Body = "Comment" });
+        _factory.Users.Reset(new User("alice", "unused") { Id = 1 });
+        _factory.Posts.Reset(new Post("Title", "Body", 1) { Id = 3 });
+        _factory.Comments.Reset(new Comment("Comment", 3, 1) { Id = 4 });
     }
 
     private static async Task AssertProblem(HttpResponseMessage response, HttpStatusCode status, string title, string path)

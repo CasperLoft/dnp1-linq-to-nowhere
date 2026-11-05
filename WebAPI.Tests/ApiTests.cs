@@ -37,8 +37,8 @@ public class ApiTests : IClassFixture<ApiFactory>
     public async Task GetUsers_FiltersByUserName()
     {
         _factory.Users.Reset(
-            new User { Id = 1, UserName = "Ada", PasswordHash = "secret" },
-            new User { Id = 2, UserName = "Bob", PasswordHash = "secret" });
+            new User("Ada", "secret") { Id = 1 },
+            new User("Bob", "secret") { Id = 2 });
 
         HttpResponseMessage response = await _client.GetAsync("/users?userNameContains=ad");
 
@@ -51,7 +51,7 @@ public class ApiTests : IClassFixture<ApiFactory>
     [Fact]
     public async Task GetUser_ReturnsUserDto()
     {
-        _factory.Users.Reset(new User { Id = 2, UserName = "Bob", PasswordHash = "secret" });
+        _factory.Users.Reset(new User("Bob", "secret") { Id = 2 });
 
         HttpResponseMessage response = await _client.GetAsync("/users/2");
 
@@ -63,12 +63,12 @@ public class ApiTests : IClassFixture<ApiFactory>
     public async Task GetPosts_PassesAllFiltersToService()
     {
         _factory.Users.Reset(
-            new User { Id = 2, UserName = "ada", PasswordHash = "secret" },
-            new User { Id = 5, UserName = "bob", PasswordHash = "secret" });
+            new User("ada", "secret") { Id = 2 },
+            new User("bob", "secret") { Id = 5 });
         _factory.Posts.Reset(
-            new Post { Id = 3, UserId = 2, Title = "LINQ", Body = "Body" },
-            new Post { Id = 4, UserId = 2, Title = "Other", Body = "Body" },
-            new Post { Id = 5, UserId = 5, Title = "LINQ", Body = "Body" });
+            new Post("LINQ", "Body", 2) { Id = 3 },
+            new Post("Other", "Body", 2) { Id = 4 },
+            new Post("LINQ", "Body", 5) { Id = 5 });
 
         HttpResponseMessage response = await _client.GetAsync("/posts?userId=2&titleContains=linq&userNameContains=ada");
 
@@ -81,7 +81,7 @@ public class ApiTests : IClassFixture<ApiFactory>
     [Fact]
     public async Task CreatePost_ReturnsCreatedDtoWithAuthorUserName()
     {
-        _factory.Users.Reset(new User { Id = 1, UserName = "alice", PasswordHash = "secret" });
+        _factory.Users.Reset(new User("alice", "secret") { Id = 1 });
         _factory.Posts.Reset();
 
         HttpResponseMessage response = await _client.PostAsJsonAsync(
@@ -103,12 +103,12 @@ public class ApiTests : IClassFixture<ApiFactory>
     public async Task GetComments_ReturnsUserName()
     {
         _factory.Users.Reset(
-            new User { Id = 2, UserName = "ada", PasswordHash = "secret" },
-            new User { Id = 5, UserName = "bob", PasswordHash = "secret" });
+            new User("ada", "secret") { Id = 2 },
+            new User("bob", "secret") { Id = 5 });
         _factory.Comments.Reset(
-            new Comment { Id = 4, UserId = 2, PostId = 3, Body = "Nice post" },
-            new Comment { Id = 5, UserId = 2, PostId = 8, Body = "Other post" },
-            new Comment { Id = 6, UserId = 5, PostId = 3, Body = "Other author" });
+            new Comment("Nice post", 3, 2) { Id = 4 },
+            new Comment("Other post", 8, 2) { Id = 5 },
+            new Comment("Other author", 3, 5) { Id = 6 });
 
         HttpResponseMessage response = await _client.GetAsync("/comments?userId=2&postId=3&userNameContains=ad");
 
@@ -121,8 +121,8 @@ public class ApiTests : IClassFixture<ApiFactory>
     [Fact]
     public async Task CreateComment_ReturnsCreatedDtoWithAuthorUserName()
     {
-        _factory.Users.Reset(new User { Id = 1, UserName = "alice", PasswordHash = "secret" });
-        _factory.Posts.Reset(new Post { Id = 3, UserId = 1, Title = "Post", Body = "Body" });
+        _factory.Users.Reset(new User("alice", "secret") { Id = 1 });
+        _factory.Posts.Reset(new Post("Post", "Body", 1) { Id = 3 });
         _factory.Comments.Reset();
 
         HttpResponseMessage response = await _client.PostAsJsonAsync(
@@ -153,7 +153,7 @@ public class ApiTests : IClassFixture<ApiFactory>
     [Fact]
     public async Task CreateUser_MapsDuplicateNameToConflictProblem()
     {
-        _factory.Users.Reset(new User { Id = 1, UserName = "ada", PasswordHash = "secret" });
+        _factory.Users.Reset(new User("ada", "secret") { Id = 1 });
 
         HttpResponseMessage response = await _client.PostAsJsonAsync("/users", new CreateUserRequest("ada", "secret", UserRole.User));
 
