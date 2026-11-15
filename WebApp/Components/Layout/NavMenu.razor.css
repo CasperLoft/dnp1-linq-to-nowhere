@@ -22,9 +22,10 @@
 
 .navbar-brand {
     color: #eaf7ff;
-    font-size: 0.9rem;
+    font-size: 0.83rem;
     font-weight: 800;
-    letter-spacing: 0.08em;
+    letter-spacing: 0.06em;
+    white-space: nowrap;
 }
 
 .navbar-brand span { color: var(--cyan); }

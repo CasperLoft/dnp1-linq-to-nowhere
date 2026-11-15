@@ -1,11 +1,16 @@
 ﻿@page "/"
 @inject NavigationManager NavMgr
 
-<PageTitle>LINQ // TO NOWHERE</PageTitle>
+<PageTitle>LINQ TO NOWHERE</PageTitle>
 
 <section class="hero-panel">
     <p class="eyebrow">POST NETWORK // 01</p>
-    <h1>Explore the signal.</h1>
+    <h1 class="hero-brand"><span>LINQ</span> TO NOWHERE</h1>
+    <div class="query-joke" aria-label="select leads to null">
+        <span class="query-select">select</span>
+        <span class="query-arrow" aria-hidden="true">⟶</span>
+        <span>null</span>
+    </div>
     <p class="hero-copy">A minimal command center for posts, built with Blazor and LINQ.</p>
     
     <AuthorizeView>

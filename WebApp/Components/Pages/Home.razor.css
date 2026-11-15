@@ -1,0 +1,36 @@
+.hero-panel .hero-brand {
+    max-width: 10ch;
+    margin-bottom: 1.25rem;
+    font-size: clamp(2.5rem, 6vw, 4.5rem);
+    font-weight: 850;
+    line-height: 1.02;
+    letter-spacing: -0.045em;
+    overflow-wrap: normal;
+}
+
+.hero-brand span {
+    color: var(--cyan);
+}
+
+.query-joke {
+    display: flex;
+    align-items: center;
+    gap: clamp(0.6rem, 3vw, 1.35rem);
+    margin-bottom: 1.75rem;
+    color: var(--text);
+    font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+    font-size: clamp(1.35rem, 4vw, 2.4rem);
+    line-height: 1;
+}
+
+.query-select {
+    color: var(--cyan);
+    text-shadow: 0 0 18px rgba(82, 225, 255, 0.35);
+}
+
+.query-arrow { color: var(--muted); }
+
+@media (max-width: 360px) {
+    .hero-panel .hero-brand { font-size: 2.25rem; }
+    .query-joke { font-size: 1.2rem; }
+}
