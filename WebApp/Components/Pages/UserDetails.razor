@@ -30,7 +30,7 @@ else if (user is not null)
         <p class="eyebrow">@user.Role.ToString().ToUpperInvariant() // PROFILE</p>
         <div class="d-flex align-items-center gap-3">
             <h1 id="user-profile-heading" class="mb-0">@user.UserName</h1>
-            <span class="badge rounded-pill @GetRoleBadgeClass(user.Role)">@user.Role</span>
+            <RoleBadge Role="user.Role" />
         </div>
         <p class="user-profile-copy mb-0 mt-2">Authored activity is collected here for future moderation workflows.</p>
     </section>
@@ -200,10 +200,4 @@ else if (user is not null)
         return body.Length <= maximumLength ? body : $"{body[..maximumLength]}…";
     }
 
-    private static string GetRoleBadgeClass(UserRole role) => role switch
-    {
-        UserRole.Admin => "bg-danger",
-        UserRole.Moderator => "bg-primary",
-        _ => "bg-secondary"
-    };
 }

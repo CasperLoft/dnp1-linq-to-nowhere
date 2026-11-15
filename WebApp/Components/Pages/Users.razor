@@ -50,8 +50,10 @@ else
                     <article class="card h-100 shadow-sm user-card">
                       <a class="user-card-link" href="@($"users/{user.Id}")">
                         <div class="card-body">
-                            <p class="eyebrow">USER</p>
-                            <h2 class="h5 card-title mb-0">@user.UserName</h2>
+                            <div class="d-flex align-items-center gap-3">
+                                <h2 class="h5 card-title mb-0">@user.UserName</h2>
+                                <RoleBadge Role="user.Role" />
+                            </div>
                         </div>
                       </a>
                       <div class="card-footer"><a class="btn btn-outline-secondary" href="@($"users/{user.Id}/edit")" aria-label="@($"Edit {user.UserName}")">Edit</a></div>

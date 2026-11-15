@@ -1,0 +1,14 @@
+@using Enums
+
+<span class="badge rounded-pill @BadgeClass">@Role</span>
+
+@code {
+    [Parameter] public UserRole Role { get; set; }
+
+    private string BadgeClass => Role switch
+    {
+        UserRole.Admin => "bg-danger",
+        UserRole.Moderator => "bg-primary",
+        _ => "bg-secondary"
+    };
+}
