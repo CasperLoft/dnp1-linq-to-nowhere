@@ -1,6 +1,8 @@
 @page "/posts"
 @using DTOs
 @using WebApp.Services
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize]
 @inject IPostService PostService
 
 <PageTitle>Posts</PageTitle>

@@ -28,6 +28,7 @@ public class SqliteApiTests
     private sealed class SqliteFactory : WebApplicationFactory<Program>
     {
         private readonly string _databasePath = Path.Combine(Path.GetTempPath(), $"linq-api-{Guid.NewGuid():N}.db");
+        public TestClock Clock { get; } = new();
         private string ConnectionString => new SqliteConnectionStringBuilder { DataSource = _databasePath, Pooling = false }.ToString();
 
         public async Task MigrateAsync()
@@ -43,6 +44,8 @@ public class SqliteApiTests
                 services.RemoveAll<DatabaseContext>();
                 services.RemoveAll<DbContextOptions<DatabaseContext>>();
                 services.RemoveAll<IDbContextOptionsConfiguration<DatabaseContext>>();
+                services.RemoveAll<TimeProvider>();
+                services.AddSingleton<TimeProvider>(Clock);
                 services.AddDbContext<DatabaseContext>(options => options.UseSqlite(ConnectionString));
             });
 
@@ -209,6 +212,56 @@ public class SqliteApiTests
         Assert.Null(new SessionStore(clock).GetUserId(token));
         clock.Now = clock.Now.AddHours(8);
         Assert.Null(sessions.GetUserId(token));
+    }
+
+    [Fact]
+    public async Task PostEndpointsRequireSessionForEveryRole()
+    {
+        using var factory = new SqliteFactory();
+        await factory.MigrateAsync();
+        using var client = factory.CreateClient();
+        await AuthenticateAdminAsync(factory, client);
+        int userId;
+        using (var scope = factory.Services.CreateScope())
+        {
+            var context = scope.ServiceProvider.GetRequiredService<DatabaseContext>();
+            var hasher = new PasswordHasher<User>();
+            var user = new User("Poster", hasher.HashPassword(null!, "secret"), UserRole.User);
+            context.Users.Add(user);
+            await context.SaveChangesAsync();
+            userId = user.Id;
+        }
+
+        async Task AssertUnauthorizedAsync()
+        {
+            Assert.Equal(HttpStatusCode.Unauthorized, (await client.GetAsync("/posts")).StatusCode);
+            Assert.Equal(HttpStatusCode.Unauthorized, (await client.GetAsync("/posts/1")).StatusCode);
+            Assert.Equal(HttpStatusCode.Unauthorized, (await client.PostAsJsonAsync("/posts", new CreatePostRequest("Title", "Body", userId))).StatusCode);
+            Assert.Equal(HttpStatusCode.Unauthorized, (await client.PutAsJsonAsync("/posts/1", new UpdatePostRequest("Title", "Body"))).StatusCode);
+            Assert.Equal(HttpStatusCode.Unauthorized, (await client.DeleteAsync("/posts/1")).StatusCode);
+        }
+
+        client.DefaultRequestHeaders.Authorization = null;
+        await AssertUnauthorizedAsync();
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", new string('A', 64));
+        await AssertUnauthorizedAsync();
+
+        var login = (await (await client.PostAsJsonAsync("/auth/login", new LoginRequest("Poster", "secret"))).Content.ReadFromJsonAsync<LoginResponse>())!;
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", login.Token);
+        var created = await client.PostAsJsonAsync("/posts", new CreatePostRequest("Title", "Body", userId));
+        Assert.Equal(HttpStatusCode.Created, created.StatusCode);
+        var post = (await created.Content.ReadFromJsonAsync<PostResponse>())!;
+        Assert.Equal(HttpStatusCode.OK, (await client.GetAsync("/posts")).StatusCode);
+        Assert.Equal(HttpStatusCode.OK, (await client.GetAsync($"/posts/{post.Id}")).StatusCode);
+        Assert.Equal(HttpStatusCode.OK, (await client.PutAsJsonAsync($"/posts/{post.Id}", new UpdatePostRequest("Edited", "Body"))).StatusCode);
+        Assert.Equal(HttpStatusCode.NoContent, (await client.DeleteAsync($"/posts/{post.Id}")).StatusCode);
+
+        factory.Clock.Now = factory.Clock.Now.AddHours(8);
+        await AssertUnauthorizedAsync();
+        login = (await (await client.PostAsJsonAsync("/auth/login", new LoginRequest("Poster", "secret"))).Content.ReadFromJsonAsync<LoginResponse>())!;
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", login.Token);
+        Assert.Equal(HttpStatusCode.NoContent, (await client.PostAsync("/auth/logout", null)).StatusCode);
+        await AssertUnauthorizedAsync();
     }
 
     private sealed class TestClock : TimeProvider

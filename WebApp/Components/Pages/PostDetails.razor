@@ -2,6 +2,8 @@
 @using DTOs
 @using DTOs.Comments.Requests
 @using WebApp.Services
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize]
 @using System.Security.Claims
 @inject AuthenticationStateProvider AuthProvider
 @inject IJSRuntime JS

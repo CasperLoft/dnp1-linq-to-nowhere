@@ -3,8 +3,7 @@
     <Found Context="routeData">
         <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(Layout.MainLayout)">
             <NotAuthorized>
-                <img width="600" src="https://tenor.com/hmhgYU5aSeC.gif" />
-                <p>You'll havve to log in!</p>
+                <p>Please <a href="login">log in</a> to access this page. If you are already signed in, your account may not have permission.</p>
             </NotAuthorized>
         </AuthorizeRouteView>
         <FocusOnNavigate RouteData="routeData" Selector="h1"/>

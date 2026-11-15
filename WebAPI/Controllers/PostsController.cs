@@ -1,4 +1,5 @@
 using DTOs;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Services;
 
@@ -6,6 +7,7 @@ namespace WebAPI.Controllers;
 
 [ApiController]
 [Route("posts")]
+[Authorize]
 public class PostsController : ControllerBase
 {
     private readonly IPostService _postService;
