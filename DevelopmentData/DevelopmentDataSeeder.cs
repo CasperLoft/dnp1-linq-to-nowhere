@@ -19,6 +19,12 @@ public sealed class DevelopmentDataSeeder(
         await DeleteAllAsync(postRepository.GetManyAsync(), postRepository.DeleteAsync);
         await DeleteAllAsync(userRepository.GetManyAsync(), userRepository.DeleteAsync);
 
+        await SeedAsync();
+    }
+
+    public async Task SeedAsync(bool includeAdditionalActivity = false)
+    {
+
         User alice = await CreateUserAsync("Alice", UserRole.Admin);
         User bob = await CreateUserAsync("Bob", UserRole.Moderator);
         User charlie = await CreateUserAsync("Charlie", UserRole.User);
@@ -46,6 +52,30 @@ public sealed class DevelopmentDataSeeder(
             await commentRepository.AddAsync(new Comment ( "This is the first comment.", post.Id, alice.Id ));
             await commentRepository.AddAsync(new Comment ( "This is the second comment.", post.Id, bob.Id ));
             await commentRepository.AddAsync(new Comment ( "This is the third comment.", post.Id, charlie.Id ));
+        }
+
+        if (!includeAdditionalActivity) return;
+
+        var users = new List<User>();
+        for (int i = 1; i <= 20; i++)
+        {
+            users.Add(await CreateUserAsync($"SampleUser{i:00}", UserRole.User));
+        }
+
+        string[] topics = ["Learning LINQ", "Weekend projects", "Favorite books", "Getting started", "Coffee break"];
+        for (int i = 0; i < 40; i++)
+        {
+            Post post = await postRepository.AddAsync(new Post(
+                $"{topics[i % topics.Length]} #{i + 1}",
+                $"Sample discussion {i + 1}: sharing ideas and experiences.",
+                users[i % users.Count].Id));
+
+            for (int j = 0; j < 2; j++)
+            {
+                User commenter = users[(i * 3 + j + 1) % users.Count];
+                await commentRepository.AddAsync(new Comment(
+                    $"Thanks for sharing! Sample reply {i * 2 + j + 1}.", post.Id, commenter.Id));
+            }
         }
     }
 

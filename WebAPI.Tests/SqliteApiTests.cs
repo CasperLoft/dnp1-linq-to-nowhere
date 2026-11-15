@@ -34,7 +34,7 @@ public class SqliteApiTests
         }
 
         protected override void ConfigureWebHost(IWebHostBuilder builder) =>
-            builder.ConfigureServices(services =>
+            builder.UseEnvironment("Testing").ConfigureServices(services =>
             {
                 services.RemoveAll<DatabaseContext>();
                 services.RemoveAll<DbContextOptions<DatabaseContext>>();

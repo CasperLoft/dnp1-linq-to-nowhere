@@ -1,4 +1,5 @@
 using Entities;
+using DevelopmentData;
 using EfcRepositories;
 using Microsoft.Data.Sqlite;
 using Microsoft.AspNetCore.Identity;
@@ -29,12 +30,35 @@ builder.Services.AddDbContext<EfcRepositories.AppContext>(options => options.Use
 builder.Services.AddScoped<IPostRepository, EfcPostRepository>();
 builder.Services.AddScoped<IUserRepository, EfcUserRepository>();
 builder.Services.AddScoped<ICommentRepository, EfcCommentRepository>();
+builder.Services.AddScoped<DevelopmentDataSeeder>();
 
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IPostService, PostService>();
 builder.Services.AddScoped<ICommentService, CommentService>();
 
 var app = builder.Build();
+
+if (app.Environment.IsDevelopment())
+{
+    await using var scope = app.Services.CreateAsyncScope();
+    var context = scope.ServiceProvider.GetRequiredService<EfcRepositories.AppContext>();
+    try
+    {
+        if ((await context.Database.GetPendingMigrationsAsync()).Any())
+            throw new InvalidOperationException("The SQLite database has pending migrations. Apply them before starting the API; see the README.");
+
+        await using var transaction = await context.Database.BeginTransactionAsync();
+        if (!await context.Users.AnyAsync() && !await context.Posts.AnyAsync() && !await context.Comments.AnyAsync())
+        {
+            await scope.ServiceProvider.GetRequiredService<DevelopmentDataSeeder>().SeedAsync(includeAdditionalActivity: true);
+            await transaction.CommitAsync();
+        }
+    }
+    catch (SqliteException exception)
+    {
+        throw new InvalidOperationException("Could not initialize the development SQLite database. Apply the migrations and check the database connection; see the README.", exception);
+    }
+}
 
 app.UseExceptionHandler();
 app.MapControllers();

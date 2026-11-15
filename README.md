@@ -17,7 +17,9 @@ dotnet ef database update --project EfcRepositories --connection "Data Source=Ef
 
 The API defaults to `EfcRepositories/app.db`. Override this with the `ConnectionStrings:Database` configuration value (for example, the `ConnectionStrings__Database` environment variable). Apply migrations to the chosen database explicitly; startup does not apply them.
 
-The SQLite database starts separately from the CLI's JSON data. Create users through the API or web app. To create sample data for the CLI instead, run:
+When the API starts in Development, it seeds an entirely empty SQLite database with 23 users, 43 posts, and 89 comments. The sample accounts include `Alice` (Admin), `Bob` (Moderator), `Charlie` (User), and `SampleUser01` through `SampleUser20` (Users). All have the development password `password123`. If any of the three tables already contains data, startup leaves the database untouched. Automatic seeding is disabled outside Development.
+
+The SQLite database is separate from the CLI's JSON data. To create the original sample data for the CLI, run:
 
 ```sh
 dotnet run --project CLI -- seed --reset
