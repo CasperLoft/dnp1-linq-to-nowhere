@@ -1,6 +1,6 @@
 # LINQ to Nowhere
 
-A DNP1 assignment project with a Blazor web app, a separate ASP.NET Core Web API, and a command-line interface. The API and CLI use JSON files for local data.
+A DNP1 assignment project with a Blazor web app, a separate ASP.NET Core Web API, and a command-line interface. The API uses SQLite; the CLI uses JSON files for local data.
 
 ## Requirements
 
@@ -9,7 +9,15 @@ A DNP1 assignment project with a Blazor web app, a separate ASP.NET Core Web API
 
 ## Run locally
 
-Run these commands from the repository root. First, create the sample data:
+Run these commands from the repository root. Apply the database migrations before starting the API (install the `dotnet-ef` tool if needed):
+
+```sh
+dotnet ef database update --project EfcRepositories --connection "Data Source=EfcRepositories/app.db"
+```
+
+The API defaults to `EfcRepositories/app.db`. Override this with the `ConnectionStrings:Database` configuration value (for example, the `ConnectionStrings__Database` environment variable). Apply migrations to the chosen database explicitly; startup does not apply them.
+
+The SQLite database starts separately from the CLI's JSON data. Create users through the API or web app. To create sample data for the CLI instead, run:
 
 ```sh
 dotnet run --project CLI -- seed --reset
@@ -17,7 +25,7 @@ dotnet run --project CLI -- seed --reset
 
 **This command deletes all existing users, posts, and comments in the local `data/` directory before recreating the sample data.** The directory is ignored by Git. The CLI uses the current working directory to locate it, so run the command from the repository root.
 
-The sample users are `Alice` (Admin), `Bob` (Moderator), and `Charlie` (User). Their development password is `password123`; it is for local testing only.
+The CLI sample users are `Alice` (Admin), `Bob` (Moderator), and `Charlie` (User). Their development password is `password123`; it is for local testing only. Seeding does not populate SQLite.
 
 Start the API and WebApp in separate terminals:
 

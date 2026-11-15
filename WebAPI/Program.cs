@@ -1,14 +1,19 @@
 using Entities;
-using FileRepositories;
+using EfcRepositories;
+using Microsoft.Data.Sqlite;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using RepositoryContracts;
 using Services;
 using Services.Implementations;
 using WebAPI;
 
 var builder = WebApplication.CreateBuilder(args);
-string dataDirectory = builder.Configuration["DataDirectory"]
-    ?? Path.GetFullPath(Path.Combine(builder.Environment.ContentRootPath, "..", "data"));
+string connectionString = builder.Configuration.GetConnectionString("Database")
+    ?? new SqliteConnectionStringBuilder
+    {
+        DataSource = Path.GetFullPath(Path.Combine(builder.Environment.ContentRootPath, "..", "EfcRepositories", "app.db"))
+    }.ToString();
 
 builder.Services.AddControllers();
 builder.Services.AddProblemDetails();
@@ -20,9 +25,10 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 
-builder.Services.AddScoped<IPostRepository>(_ => new PostFileRepository(dataDirectory));
-builder.Services.AddScoped<IUserRepository>(_ => new UserFileRepository(dataDirectory));
-builder.Services.AddScoped<ICommentRepository>(_ => new CommentFileRepository(dataDirectory));
+builder.Services.AddDbContext<EfcRepositories.AppContext>(options => options.UseSqlite(connectionString));
+builder.Services.AddScoped<IPostRepository, EfcPostRepository>();
+builder.Services.AddScoped<IUserRepository, EfcUserRepository>();
+builder.Services.AddScoped<ICommentRepository, EfcCommentRepository>();
 
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IPostService, PostService>();

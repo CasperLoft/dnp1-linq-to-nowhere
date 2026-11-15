@@ -1,5 +1,8 @@
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Data.Sqlite;
+using Microsoft.EntityFrameworkCore;
+using RepositoryContracts.Exceptions;
 using Services;
 
 namespace WebAPI;
@@ -14,7 +17,11 @@ public class ApiExceptionHandler : IExceptionHandler
         (int statusCode, string title) = exception switch
         {
             ResourceNotFoundException => (StatusCodes.Status404NotFound, "Resource not found"),
+            NotFoundException => (StatusCodes.Status404NotFound, "Resource not found"),
             ConflictException => (StatusCodes.Status409Conflict, "Request conflicts with existing data"),
+            DbUpdateException { InnerException: SqliteException { SqliteExtendedErrorCode: 2067 } sqlite }
+                when sqlite.Message.Contains("Users.UserName", StringComparison.Ordinal) =>
+                (StatusCodes.Status409Conflict, "Request conflicts with existing data"),
             _ => (StatusCodes.Status500InternalServerError, "An unexpected error occurred")
         };
 
@@ -22,7 +29,8 @@ public class ApiExceptionHandler : IExceptionHandler
         {
             Status = statusCode,
             Title = title,
-            Detail = statusCode == StatusCodes.Status500InternalServerError ? null : exception.Message,
+            Detail = exception is DbUpdateException ? "The username is already in use." :
+                statusCode == StatusCodes.Status500InternalServerError ? null : exception.Message,
             Instance = httpContext.Request.Path
         };
 

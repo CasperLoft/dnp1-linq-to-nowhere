@@ -45,13 +45,14 @@ public class PostService : IPostService
         string? titleContains = null,
         string? userNameContains = null)
     {
-        IQueryable<Post> posts = _postRepository.GetManyAsync();
+        IQueryable<Post> query = _postRepository.GetManyAsync();
 
         if (userId.HasValue)
         {
-            posts = posts.Where(post => post.UserId == userId.Value);
+            query = query.Where(post => post.UserId == userId.Value);
         }
 
+        IEnumerable<Post> posts = query.AsEnumerable();
         if (!string.IsNullOrWhiteSpace(titleContains))
         {
             posts = posts.Where(post => post.Title.Contains(titleContains, StringComparison.OrdinalIgnoreCase));

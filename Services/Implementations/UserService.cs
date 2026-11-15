@@ -48,7 +48,7 @@ public class UserService : IUserService
 
     public Task<IReadOnlyCollection<UserResponse>> GetManyAsync(string? userNameContains = null)
     {
-        IQueryable<User> users = _userRepository.GetManyAsync();
+        IEnumerable<User> users = _userRepository.GetManyAsync().AsEnumerable();
 
         if (!string.IsNullOrWhiteSpace(userNameContains))
         {
@@ -101,7 +101,7 @@ public class UserService : IUserService
 
     private void EnsureUserNameIsAvailable(string userName, int? excludedUserId = null)
     {
-        bool exists = _userRepository.GetManyAsync().Any(user =>
+        bool exists = _userRepository.GetManyAsync().AsEnumerable().Any(user =>
             user.Id != excludedUserId &&
             string.Equals(user.UserName, userName, StringComparison.OrdinalIgnoreCase));
 

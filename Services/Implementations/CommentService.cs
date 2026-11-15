@@ -71,7 +71,7 @@ public class CommentService : ICommentService
             comments = comments.Where(comment => matchingUserIds.Contains(comment.UserId));
         }
 
-        IReadOnlyCollection<CommentResponse> result = comments
+        IReadOnlyCollection<CommentResponse> result = comments.AsEnumerable()
             .Select(comment => ToDto(comment, GetUserName(userNamesById, comment.UserId)))
             .ToArray();
         return Task.FromResult(result);
