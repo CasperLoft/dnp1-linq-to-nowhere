@@ -11,6 +11,6 @@ public class AppContext : DbContext
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
-        optionsBuilder.UseSqlite("Data Source=app.db");
+        optionsBuilder.UseSqlite("Data Source=/Users/loft/Documents/Software Engineer/3. Semester/DNP1/repo/dnp1-linq-to-nowhere/EfcRepositories/app.db");
     }
 }
