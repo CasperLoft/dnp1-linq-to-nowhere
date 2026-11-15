@@ -16,29 +16,31 @@ public class EfcUserRepository : IUserRepository
 
     public async Task<User> AddAsync(User user)
     {
-        await _ctx.Users.AddAsync(user);
+        _ctx.Users.Add(user);
         await _ctx.SaveChangesAsync();
         return user;
     }
 
     public async Task UpdateAsync(User user)
     {
-        if (!(await _ctx.Users.AnyAsync(u => u.Id == user.Id)))
+        User? existing = await _ctx.Users.FindAsync(user.Id);
+        if (existing is null)
         {
-            throw new NotFoundException($"User with {user.Id} not found");
-        };
+            throw new NotFoundException($"User with id {user.Id} not found");
+        }
 
-        _ctx.Users.Update(user);
+        existing.UserName = user.UserName;
+        existing.PasswordHash = user.PasswordHash;
+        existing.Role = user.Role;
         await _ctx.SaveChangesAsync();
-
     }
 
     public async Task DeleteAsync(int userId)
     {
         User? existing = await _ctx.Users.SingleOrDefaultAsync(u => u.Id == userId);
-        if (existing == null)
+        if (existing is null)
         {
-            throw new NotFoundException($"User with {userId} not found");
+            throw new NotFoundException($"User with id {userId} not found");
         }
 
         _ctx.Users.Remove(existing);
@@ -47,28 +49,22 @@ public class EfcUserRepository : IUserRepository
 
     public async Task<User> GetByIdAsync(int userId)
     {
-        User? existing = await _ctx.Users.SingleOrDefaultAsync(u => u.Id == userId);
-        if (existing == null)
+        User? existing = await _ctx.Users.AsNoTracking().SingleOrDefaultAsync(u => u.Id == userId);
+        if (existing is null)
         {
-            throw new NotFoundException($"User with {userId} not found");
+            throw new NotFoundException($"User with id {userId} not found");
         }
 
         return existing;
     }
 
-    public async Task<User> GetByUsernameAsync(string username)
+    public async Task<User?> GetByUsernameAsync(string username)
     {
-        User? existing = await _ctx.Users.SingleOrDefaultAsync(u => u.UserName == username);
-        if (existing == null)
-        {
-            throw new NotFoundException($"User with {username} not found");
-        }
-
-        return existing;
+        return await _ctx.Users.AsNoTracking().SingleOrDefaultAsync(u => u.UserName == username);
     }
 
     public IQueryable<User> GetManyAsync()
     {
-        return _ctx.Users.AsQueryable();
+        return _ctx.Users.AsNoTracking();
     }
 }
