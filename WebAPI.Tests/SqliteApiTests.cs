@@ -136,6 +136,35 @@ public class SqliteApiTests
         Assert.Equal(StatusCodes.Status409Conflict, httpContext.Response.StatusCode);
     }
 
+    [Theory]
+    [InlineData(1)]
+    [InlineData(2)]
+    public async Task AnonymousSignupCreatesOnlyStandardUsersAndHandlesDuplicates(int requestedRole)
+    {
+        using var factory = new SqliteFactory();
+        await factory.MigrateAsync();
+        using var client = factory.CreateClient();
+
+        var response = await client.PostAsJsonAsync("/auth/signup", new { UserName = "NewUser", Password = "secret", Role = requestedRole });
+        Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+        var created = (await response.Content.ReadFromJsonAsync<UserResponse>())!;
+        Assert.Equal(UserRole.User, created.Role);
+        using (var scope = factory.Services.CreateScope())
+        {
+            var user = await scope.ServiceProvider.GetRequiredService<DatabaseContext>().Users.SingleAsync();
+            Assert.NotEqual("secret", user.PasswordHash);
+            Assert.NotEqual(PasswordVerificationResult.Failed, new PasswordHasher<User>().VerifyHashedPassword(user, user.PasswordHash, "secret"));
+        }
+        Assert.Equal(HttpStatusCode.Conflict, (await client.PostAsJsonAsync("/auth/signup", new SignupRequest("newuser", "other"))).StatusCode);
+        Assert.Equal(HttpStatusCode.BadRequest, (await client.PostAsJsonAsync("/auth/signup", new SignupRequest(" ", "secret"))).StatusCode);
+        Assert.Equal(HttpStatusCode.BadRequest, (await client.PostAsJsonAsync("/auth/signup", new SignupRequest("another", ""))).StatusCode);
+        Assert.Equal(HttpStatusCode.Unauthorized, (await client.GetAsync("/auth/me")).StatusCode);
+        Assert.Equal(HttpStatusCode.Unauthorized, (await client.GetAsync("/users")).StatusCode);
+        var login = await client.PostAsJsonAsync("/auth/login", new LoginRequest("newuser", "secret"));
+        Assert.Equal(HttpStatusCode.OK, login.StatusCode);
+        Assert.Equal(UserRole.User, (await login.Content.ReadFromJsonAsync<LoginResponse>())!.User.Role);
+    }
+
     [Fact]
     public async Task UserEndpointsRequireCurrentAdminSession()
     {

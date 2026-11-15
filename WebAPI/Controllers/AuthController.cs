@@ -12,8 +12,15 @@ namespace WebAPI.Controllers;
 
 [ApiController]
 [Route("auth")]
-public class AuthController(IAuthService authService, SessionStore sessions) : ControllerBase
+public class AuthController(IAuthService authService, IUserService userService, SessionStore sessions) : ControllerBase
 {
+    [HttpPost("signup")]
+    public async Task<ActionResult<UserResponse>> Signup([FromBody] SignupRequest request)
+    {
+        var user = await userService.CreateAsync(new CreateUserRequest(request.UserName, request.Password, UserRole.User));
+        return StatusCode(StatusCodes.Status201Created, user);
+    }
+
     [HttpPost("login")]
     public async Task<ActionResult<LoginResponse>> Login([FromBody] LoginRequest request)
     {

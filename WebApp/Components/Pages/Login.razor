@@ -12,6 +12,11 @@
             <h1>Log in</h1>
             <p class="login-copy">Sign in to your account.</p>
 
+            @if (Registered)
+            {
+                <div class="alert alert-success" role="status">Account created. You can now log in.</div>
+            }
+
             @if (!string.IsNullOrEmpty(errorLabel))
             {
                 <div class="alert alert-danger" role="alert">@errorLabel</div>
@@ -42,6 +47,9 @@
 
 @code
 {
+    [SupplyParameterFromQuery(Name = "registered")]
+    public bool Registered { get; set; }
+
     private string userName;
     private string password;
     private string errorLabel;

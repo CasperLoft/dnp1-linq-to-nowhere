@@ -1,0 +1,70 @@
+@page "/signup"
+@using DTOs.Auth.Requests
+@inject HttpClient Http
+@inject NavigationManager Navigation
+
+<PageTitle>Sign up</PageTitle>
+
+<section class="signup-panel">
+    <p class="eyebrow">AUTH // SIGN UP</p>
+    <h1>Create an account</h1>
+    <p class="signup-copy">Choose a username and password to join.</p>
+
+    @if (errorMessage is not null)
+    {
+        <div class="alert alert-danger" role="alert">@errorMessage</div>
+    }
+
+    <EditForm Model="model" OnValidSubmit="SignUpAsync">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+        <div class="mb-4">
+            <label class="form-label" for="signup-username">Username</label>
+            <InputText id="signup-username" class="form-control" autocomplete="username" @bind-Value="model.UserName" />
+            <ValidationMessage For="() => model.UserName" />
+        </div>
+        <div>
+            <label class="form-label" for="signup-password">Password</label>
+            <InputText id="signup-password" class="form-control" type="password" autocomplete="new-password" @bind-Value="model.Password" />
+            <ValidationMessage For="() => model.Password" />
+        </div>
+        <div class="signup-actions">
+            <a class="btn btn-outline-secondary" href="login">Back to login</a>
+            <button class="btn btn-primary" type="submit" disabled="@isSubmitting">@(isSubmitting ? "Creating…" : "Sign up")</button>
+        </div>
+    </EditForm>
+</section>
+
+@code {
+    private readonly SignupFormModel model = new();
+    private bool isSubmitting;
+    private string? errorMessage;
+
+    private async Task SignUpAsync()
+    {
+        if (isSubmitting) return;
+        isSubmitting = true;
+        errorMessage = null;
+        try
+        {
+            using var response = await Http.PostAsJsonAsync("auth/signup", new SignupRequest(model.UserName, model.Password));
+            if (response.StatusCode == System.Net.HttpStatusCode.Conflict)
+            {
+                errorMessage = "That username is already in use. Choose another one and try again.";
+                return;
+            }
+            if (response.StatusCode == System.Net.HttpStatusCode.BadRequest)
+            {
+                errorMessage = "Enter a username and password and try again.";
+                return;
+            }
+            response.EnsureSuccessStatusCode();
+            Navigation.NavigateTo("login?registered=true");
+        }
+        catch (HttpRequestException)
+        {
+            errorMessage = "Your account could not be created. Make sure the Web API is running and try again.";
+        }
+        finally { isSubmitting = false; }
+    }
+}
