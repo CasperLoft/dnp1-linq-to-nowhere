@@ -8,6 +8,9 @@ using RepositoryContracts;
 using Services;
 using Services.Implementations;
 using WebAPI;
+using WebAPI.Auth;
+using Microsoft.AspNetCore.Authentication;
+using Enums;
 
 var builder = WebApplication.CreateBuilder(args);
 string connectionString = builder.Configuration.GetConnectionString("Database")
@@ -19,6 +22,10 @@ string connectionString = builder.Configuration.GetConnectionString("Database")
 builder.Services.AddControllers();
 builder.Services.AddProblemDetails();
 builder.Services.AddExceptionHandler<ApiExceptionHandler>();
+builder.Services.AddSingleton(TimeProvider.System);
+builder.Services.AddSingleton<SessionStore>();
+builder.Services.AddAuthentication("Session").AddScheme<AuthenticationSchemeOptions, SessionAuthenticationHandler>("Session", _ => { });
+builder.Services.AddAuthorization();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -37,6 +44,34 @@ builder.Services.AddScoped<IPostService, PostService>();
 builder.Services.AddScoped<ICommentService, CommentService>();
 
 var app = builder.Build();
+
+if (args.Length > 0 && args[0] == "provision-admin")
+{
+    if (app.Environment.IsDevelopment() || args.Length != 2 || string.IsNullOrWhiteSpace(args[1]) || Console.IsInputRedirected)
+        throw new InvalidOperationException("Use provision-admin <username> outside Development in an interactive terminal.");
+    await using var scope = app.Services.CreateAsyncScope();
+    var context = scope.ServiceProvider.GetRequiredService<EfcRepositories.AppContext>();
+    if ((await context.Database.GetPendingMigrationsAsync()).Any())
+        throw new InvalidOperationException("Apply the database migrations before provisioning an admin.");
+    var repository = scope.ServiceProvider.GetRequiredService<IUserRepository>();
+    if (await repository.GetByUsernameAsync(args[1]) is not null)
+        throw new InvalidOperationException("That username is already in use.");
+    Console.Write("Password: ");
+    var password = new System.Text.StringBuilder();
+    while (true)
+    {
+        var key = Console.ReadKey(intercept: true);
+        if (key.Key == ConsoleKey.Enter) break;
+        if (key.Key == ConsoleKey.Backspace) { if (password.Length > 0) password.Length--; }
+        else if (!char.IsControl(key.KeyChar)) password.Append(key.KeyChar);
+    }
+    Console.WriteLine();
+    if (password.Length == 0) throw new InvalidOperationException("Password cannot be empty.");
+    var hasher = scope.ServiceProvider.GetRequiredService<IPasswordHasher<User>>();
+    await repository.AddAsync(new User(args[1], hasher.HashPassword(null!, password.ToString()), UserRole.Admin));
+    Console.WriteLine("Admin account created.");
+    return;
+}
 
 if (app.Environment.IsDevelopment())
 {
@@ -61,6 +96,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseExceptionHandler();
+app.UseAuthentication();
+app.UseAuthorization();
 app.MapControllers();
 
 if (app.Environment.IsDevelopment())

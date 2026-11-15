@@ -47,14 +47,15 @@ else
         @foreach (UserResponse user in users)
         {
             <div class="col">
-                <a class="user-card-link" href="@($"users/{user.Id}")">
                     <article class="card h-100 shadow-sm user-card">
+                      <a class="user-card-link" href="@($"users/{user.Id}")">
                         <div class="card-body">
                             <p class="eyebrow">USER</p>
                             <h2 class="h5 card-title mb-0">@user.UserName</h2>
                         </div>
+                      </a>
+                      <div class="card-footer"><a class="btn btn-outline-secondary" href="@($"users/{user.Id}/edit")" aria-label="@($"Edit {user.UserName}")">Edit</a></div>
                     </article>
-                </a>
             </div>
         }
     </div>

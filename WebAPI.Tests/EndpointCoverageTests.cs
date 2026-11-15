@@ -3,6 +3,7 @@ using System.Net.Http.Json;
 using System.Text;
 using DTOs;
 using DTOs.Auth.Requests;
+using DTOs.Auth.Responses;
 using DTOs.Comments.Requests;
 using Entities;
 using Enums;
@@ -32,7 +33,7 @@ public class EndpointCoverageTests : IClassFixture<ApiFactory>
 
         var response = await _client.PostAsJsonAsync("/auth/login", new LoginRequest("alice", "secret"));
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.Equal(new UserResponse(1, "alice", UserRole.Moderator), await response.Content.ReadFromJsonAsync<UserResponse>());
+        Assert.Equal(new UserResponse(1, "alice", UserRole.Moderator), (await response.Content.ReadFromJsonAsync<LoginResponse>())!.User);
         Assert.DoesNotContain("password", await response.Content.ReadAsStringAsync(), StringComparison.OrdinalIgnoreCase);
     }
 

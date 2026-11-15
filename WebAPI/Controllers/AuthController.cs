@@ -1,34 +1,39 @@
+using System.Security.Claims;
 using DTOs;
 using DTOs.Auth.Requests;
-using Entities;
+using DTOs.Auth.Responses;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Services;
+using WebAPI.Auth;
+using Enums;
 
 namespace WebAPI.Controllers;
 
 [ApiController]
 [Route("auth")]
-public class AuthController : ControllerBase
+public class AuthController(IAuthService authService, SessionStore sessions) : ControllerBase
 {
-    private readonly IAuthService _authService;
-
-    public AuthController(IAuthService authService)
+    [HttpPost("login")]
+    public async Task<ActionResult<LoginResponse>> Login([FromBody] LoginRequest request)
     {
-        _authService = authService;
+        var user = await authService.ValidateUser(request.UserName, request.Password);
+        if (user is null) return Unauthorized();
+        return Ok(new LoginResponse(sessions.Create(user.Id), new UserResponse(user.Id, user.UserName, user.Role)));
     }
 
-    [HttpPost("login")]
-    public async Task<ActionResult<UserResponse>> Login([FromBody] LoginRequest request)
+    [Authorize]
+    [HttpGet("me")]
+    public ActionResult<UserResponse> Me() => Ok(new UserResponse(
+        int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!),
+        User.Identity!.Name!,
+        Enum.Parse<UserRole>(User.FindFirstValue(ClaimTypes.Role)!)));
+
+    [Authorize]
+    [HttpPost("logout")]
+    public IActionResult Logout()
     {
-        User? user = await _authService.ValidateUser(request.UserName, request.Password);
-
-        if (user is null)
-        {
-            return Unauthorized(); // HTTP 401
-        }
-
-        UserResponse response = new UserResponse(user.Id, user.UserName, user.Role);
-        
-        return Ok(response);
+        sessions.Remove(Request.Headers.Authorization.ToString()[7..].Trim());
+        return NoContent();
     }
 }

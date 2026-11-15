@@ -4,6 +4,11 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using RepositoryContracts;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Logging;
+using System.Security.Claims;
+using System.Text.Encodings.Web;
 
 namespace WebAPI.Tests;
 
@@ -18,6 +23,8 @@ public sealed class ApiFactory : WebApplicationFactory<Program>
         builder.UseEnvironment("Testing");
         builder.ConfigureServices(services =>
         {
+            services.AddAuthentication(options => { options.DefaultAuthenticateScheme = "TestAdmin"; options.DefaultChallengeScheme = "TestAdmin"; options.DefaultForbidScheme = "TestAdmin"; })
+                .AddScheme<AuthenticationSchemeOptions, TestAdminHandler>("TestAdmin", _ => { });
             services.RemoveAll<IUserRepository>();
             services.RemoveAll<IPostRepository>();
             services.RemoveAll<ICommentRepository>();
@@ -25,6 +32,16 @@ public sealed class ApiFactory : WebApplicationFactory<Program>
             services.AddSingleton<IPostRepository>(Posts);
             services.AddSingleton<ICommentRepository>(Comments);
         });
+    }
+}
+
+public class TestAdminHandler(IOptionsMonitor<AuthenticationSchemeOptions> options, ILoggerFactory logger, UrlEncoder encoder)
+    : AuthenticationHandler<AuthenticationSchemeOptions>(options, logger, encoder)
+{
+    protected override Task<AuthenticateResult> HandleAuthenticateAsync()
+    {
+        var identity = new ClaimsIdentity([new Claim(ClaimTypes.Name, "TestAdmin"), new Claim(ClaimTypes.Role, "Admin")], Scheme.Name);
+        return Task.FromResult(AuthenticateResult.Success(new AuthenticationTicket(new ClaimsPrincipal(identity), Scheme.Name)));
     }
 }
 

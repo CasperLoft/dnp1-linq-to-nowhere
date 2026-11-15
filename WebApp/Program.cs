@@ -18,7 +18,8 @@ builder.Services.AddScoped(_ => new HttpClient
 builder.Services.AddScoped<IUserService, HttpUserService>();
 builder.Services.AddScoped<IPostService, HttpPostService>();
 builder.Services.AddScoped<ICommentService, HttpCommentService>();
-builder.Services.AddScoped<AuthenticationStateProvider, SimpleAuthProvider>();
+builder.Services.AddScoped<SimpleAuthProvider>();
+builder.Services.AddScoped<AuthenticationStateProvider>(services => services.GetRequiredService<SimpleAuthProvider>());
 
 var app = builder.Build();
 
@@ -37,6 +38,9 @@ app.UseAntiforgery();
 
 app.MapStaticAssets();
 app.MapRazorComponents<App>()
-    .AddInteractiveServerRenderMode();
+    .AddInteractiveServerRenderMode()
+    // Browser session storage is available only after the interactive circuit starts.
+    // The router handles page access; the API independently enforces authorization.
+    .AllowAnonymous();
 
 app.Run();

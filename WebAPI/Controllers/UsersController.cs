@@ -1,18 +1,23 @@
 using DTOs;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Services;
+using WebAPI.Auth;
 
 namespace WebAPI.Controllers;
 
 [ApiController]
 [Route("users")]
+[Authorize(Roles = "Admin")]
 public class UsersController : ControllerBase
 {
     private readonly IUserService _userService;
+    private readonly SessionStore _sessions;
 
-    public UsersController(IUserService userService)
+    public UsersController(IUserService userService, SessionStore sessions)
     {
         _userService = userService;
+        _sessions = sessions;
     }
 
     [HttpGet]
@@ -44,6 +49,7 @@ public class UsersController : ControllerBase
     public async Task<IActionResult> Delete(int id)
     {
         await _userService.DeleteAsync(id);
+        _sessions.RemoveForUser(id);
         return NoContent();
     }
 }

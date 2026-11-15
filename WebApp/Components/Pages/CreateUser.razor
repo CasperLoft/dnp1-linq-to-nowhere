@@ -2,6 +2,8 @@
 @using DTOs
 @using Enums
 @using WebApp.Services
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize(Roles = "Admin")]
 @inject IUserService UserService
 @inject NavigationManager Navigation
 

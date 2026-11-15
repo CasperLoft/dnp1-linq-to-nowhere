@@ -54,3 +54,15 @@ dotnet test
 The API has a login endpoint at `POST /auth/login`, and the Blazor app maintains a development login state. The login flow is not production-ready.
 
 Post and comment permissions are enforced only in the Blazor interface for this assignment. Browser session data can be modified and API endpoints can be called directly without these checks; do not use this authentication flow for production.
+
+## Admin access
+
+The user-management API and pages require an admin session. Log in with a development admin such as Alice; sessions expire after eight hours and end when the API restarts. User roles are checked on each protected request.
+
+For an already-migrated database outside Development, create the first admin from an interactive terminal:
+
+```sh
+ASPNETCORE_ENVIRONMENT=Production dotnet run --project WebAPI --no-launch-profile -- provision-admin <username>
+```
+
+The command prompts for a password without echoing it. Set `ConnectionStrings__Database` first when provisioning a database other than the default. Keep development sample credentials for local testing only.

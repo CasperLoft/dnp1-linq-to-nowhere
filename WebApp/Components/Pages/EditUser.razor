@@ -1,0 +1,98 @@
+@page "/users/{Id:int}/edit"
+@using DTOs
+@using Enums
+@using Microsoft.AspNetCore.Authorization
+@using WebApp.Services
+@attribute [Authorize(Roles = "Admin")]
+@inject IUserService UserService
+@inject NavigationManager Navigation
+
+<PageTitle>Edit user</PageTitle>
+<a class="back-link" href="users">← Back to users</a>
+<section class="user-composer-panel" aria-labelledby="edit-user-heading">
+    <h1 id="edit-user-heading">Edit user</h1>
+    @if (isLoading)
+    {
+        <p role="status">Loading user…</p>
+    }
+    else if (model is not null)
+    {
+        @if (errorMessage is not null) { <div class="alert alert-danger" role="alert">@errorMessage</div> }
+        <EditForm Model="model" OnValidSubmit="SaveAsync">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+            <div class="mb-4">
+                <label class="form-label" for="edit-username">Username</label>
+                <InputText id="edit-username" class="form-control" @bind-Value="model.UserName" />
+                <ValidationMessage For="() => model.UserName" />
+            </div>
+            <div class="mb-4">
+                <label class="form-label" for="edit-role">Role</label>
+                <InputSelect id="edit-role" class="form-select" @bind-Value="model.Role">
+                    @foreach (var role in Enum.GetValues<UserRole>()) { <option value="@role">@role</option> }
+                </InputSelect>
+            </div>
+            <div class="user-composer-actions">
+                <a class="btn btn-outline-secondary" href="@($"users/{Id}")">Cancel</a>
+                <button class="btn btn-primary" type="submit" disabled="@isSaving">@(isSaving ? "Saving…" : "Save changes")</button>
+            </div>
+        </EditForm>
+    }
+    else if (errorMessage is not null)
+    {
+        <div class="alert alert-danger" role="alert">@errorMessage</div>
+    }
+</section>
+
+@code {
+    [Parameter] public int Id { get; set; }
+    private EditUserModel? model;
+    private bool isLoading = true;
+    private bool isSaving;
+    private string? errorMessage;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        isLoading = true;
+        errorMessage = null;
+        model = null;
+        try
+        {
+            var user = await UserService.GetByIdAsync(Id);
+            model = new EditUserModel { UserName = user.UserName, Role = user.Role };
+        }
+        catch (HttpRequestException ex) { errorMessage = Error(ex); }
+        finally { isLoading = false; }
+    }
+
+    private async Task SaveAsync()
+    {
+        if (model is null || isSaving) return;
+        isSaving = true;
+        errorMessage = null;
+        try
+        {
+            await UserService.UpdateUserAsync(Id, new UpdateUserRequest(model.UserName, model.Role));
+            Navigation.NavigateTo($"users/{Id}");
+        }
+        catch (HttpRequestException ex) { errorMessage = Error(ex); }
+        finally { isSaving = false; }
+    }
+
+    private static string Error(HttpRequestException ex) => ex.StatusCode switch
+    {
+        System.Net.HttpStatusCode.Conflict => "That username is already in use.",
+        System.Net.HttpStatusCode.NotFound => "This user no longer exists.",
+        System.Net.HttpStatusCode.Unauthorized => "Your session has expired. Please log in again.",
+        System.Net.HttpStatusCode.Forbidden => "You no longer have permission to edit users.",
+        System.Net.HttpStatusCode.BadRequest => "Check the username and role and try again.",
+        _ => "The user could not be saved or loaded. Please try again."
+    };
+
+    private sealed class EditUserModel
+    {
+        [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "A username is required.")]
+        public string UserName { get; set; } = string.Empty;
+        public UserRole Role { get; set; }
+    }
+}
